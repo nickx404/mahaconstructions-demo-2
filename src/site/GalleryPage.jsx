@@ -9,12 +9,10 @@ import {
   CheckCircle, 
   Compass, 
   Eye, 
-  GridFour, 
   Image as ImageIcon, 
   List as Menu, 
   MagnifyingGlassPlus, 
   Play, 
-  SlidersHorizontal, 
   Sparkle, 
   VideoCamera, 
   X 
@@ -162,7 +160,6 @@ const galleryItemsData = [
 export default function GalleryPage() {
   const [galleryType, setGalleryType] = useState('photos'); // 'photos' | 'videos'
   const [selectedItemIndex, setSelectedItemIndex] = useState(null);
-  const [layoutMode, setLayoutMode] = useState('grid'); // 'grid' | 'bento'
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
@@ -264,7 +261,7 @@ export default function GalleryPage() {
     return () => media.revert();
   }, []);
 
-  // Stagger animation on cards when gallery type or layout changes
+  // Stagger animation on cards when gallery type changes
   useEffect(() => {
     const media = gsap.matchMedia(gridContainerRef);
     media.add('(prefers-reduced-motion: no-preference)', () => {
@@ -283,7 +280,7 @@ export default function GalleryPage() {
     });
 
     return () => media.revert();
-  }, [galleryType, layoutMode]);
+  }, [galleryType]);
 
   // 3D Magnetic Card Tilt effect on mouse move
   const handleCardMouseMove = (e, index) => {
@@ -416,7 +413,7 @@ export default function GalleryPage() {
             </div>
           </div>
 
-          {/* Controls Bar: Media Toggle & View Switcher */}
+          {/* Gallery media toggle */}
           <div className="gallery-controls-bar">
             {/* Primary Toggle: Photos vs Videos with Fluid Pill */}
             <div className="gallery-toggle-wrapper">
@@ -447,33 +444,13 @@ export default function GalleryPage() {
                 </button>
               </div>
             </div>
-
-            {/* Layout Mode Switcher */}
-            <div className="gallery-layout-toggle" title="Toggle Layout Grid">
-              <button
-                type="button"
-                className={`layout-icon-btn${layoutMode === 'grid' ? ' is-active' : ''}`}
-                onClick={() => setLayoutMode('grid')}
-                aria-label="Standard grid view"
-              >
-                <GridFour size={17} weight={layoutMode === 'grid' ? 'bold' : 'regular'} />
-              </button>
-              <button
-                type="button"
-                className={`layout-icon-btn${layoutMode === 'bento' ? ' is-active' : ''}`}
-                onClick={() => setLayoutMode('bento')}
-                aria-label="Bento architectural layout"
-              >
-                <SlidersHorizontal size={17} weight={layoutMode === 'bento' ? 'bold' : 'regular'} />
-              </button>
-            </div>
           </div>
         </div>
 
         {/* Dynamic Gallery Grid with 3D Tilt & Magnetic Physics */}
         <div 
           ref={gridContainerRef}
-          className={`gallery-grid${layoutMode === 'bento' ? ' is-bento-layout' : ''}`} 
+          className="gallery-grid"
           aria-label={galleryType === 'photos' ? 'Photo gallery grid' : 'Video gallery grid'}
         >
           {visibleItems.map((item, index) => {
@@ -482,7 +459,7 @@ export default function GalleryPage() {
               <button 
                 key={item.id}
                 type="button"
-                className={`gallery-card gallery-card-item${isVideo ? ' is-video-card' : ''}${layoutMode === 'bento' && (index === 0 || index === 4) ? ' bento-featured' : ''}`}
+                className={`gallery-card gallery-card-item${isVideo ? ' is-video-card' : ''}`}
                 aria-label={`View ${isVideo ? 'video' : 'photo'} ${item.title}`}
                 onClick={() => {
                   setSelectedItemIndex(index);
