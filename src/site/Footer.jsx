@@ -47,14 +47,15 @@ export default function Footer({ backToTopTarget = '#top', className = '' }) {
 
   const scrollToTop = (e) => {
     e.preventDefault();
+    const behavior = className.includes('home-footer') && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
     if (backToTopTarget && backToTopTarget !== '#top') {
       const targetEl = document.querySelector(backToTopTarget);
       if (targetEl) {
-        targetEl.scrollIntoView({ behavior: 'smooth' });
+        targetEl.scrollIntoView({ behavior });
         return;
       }
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior });
   };
 
   return (

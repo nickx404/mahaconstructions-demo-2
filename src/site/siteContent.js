@@ -8,7 +8,7 @@ export const services = [
 
 export const ongoingProjects = [
   {
-    slug: 'mahakuber-ananagar',
+    slug: 'maha-kuber-thirumangalam',
     name: 'Maha Kuber',
     location: 'Thirumangalam, Chennai',
     details: ['Residential', '1 & 2 BHK', '540 - 960 sq.ft', 'Bank Loan Available'],

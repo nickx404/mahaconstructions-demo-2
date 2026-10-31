@@ -48,7 +48,6 @@ export default function ContactPage() {
 
   const pageRef = useRef(null);
   const heroRef = useRef(null);
-  const formCardRef = useRef(null);
   const detailsRef = useRef(null);
   const mapCardRef = useRef(null);
   const blueprintCanvasRef = useRef(null);
@@ -95,9 +94,8 @@ export default function ContactPage() {
 
   // GSAP Orchestration & ScrollTrigger Reveals
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (prefersReducedMotion) return;
+    const media = gsap.matchMedia(pageRef);
+    media.add('(prefers-reduced-motion: no-preference)', () => {
 
       // 1. Hero Text Reveal & Motion Graphics Entrance
       const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
@@ -121,41 +119,6 @@ export default function ContactPage() {
           { autoAlpha: 1, scale: 1, duration: 0.6, ease: 'back.out(1.7)' }, 
           '-=0.5'
         );
-
-      // 2. Form Card Scroll Reveal
-      if (formCardRef.current) {
-        gsap.fromTo(formCardRef.current,
-          { autoAlpha: 0, y: 45, scale: 0.98 },
-          {
-            autoAlpha: 1,
-            y: 0,
-            scale: 1,
-            duration: 0.95,
-            ease: 'power3.out',
-            scrollTrigger: {
-              trigger: formCardRef.current,
-              start: 'top 85%',
-              toggleActions: 'play none none none',
-            },
-          }
-        );
-
-        // Form Fields Stagger Reveal
-        gsap.fromTo('.contact-form-field',
-          { autoAlpha: 0, y: 20 },
-          {
-            autoAlpha: 1,
-            y: 0,
-            duration: 0.6,
-            stagger: 0.08,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: formCardRef.current,
-              start: 'top 80%',
-            },
-          }
-        );
-      }
 
       // 3. Details Aside Stagger Entrance
       if (detailsRef.current) {
@@ -219,13 +182,14 @@ export default function ContactPage() {
         stagger: 0.6,
       });
 
-    }, pageRef);
+    });
 
-    return () => ctx.revert();
+    return () => media.revert();
   }, []);
 
-  // 3D Magnetic Card Hover Effect on Map & Form
+  // Map card hover
   const handleMapMouseMove = (e) => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const card = mapCardRef.current;
     if (!card) return;
     const rect = card.getBoundingClientRect();
@@ -319,7 +283,7 @@ export default function ContactPage() {
               </span>
               <span className="hero-split-line-wrap">
                 <span className="hero-split-line">
-                  <em className="gradient-shimmer-text">conversation.</em>
+                  <em className="hero-underlined-text">conversation.</em>
                 </span>
               </span>
             </h1>
@@ -353,7 +317,6 @@ export default function ContactPage() {
           {/* Animated Form Card */}
           <form 
             className="contact-page-form" 
-            ref={formCardRef}
             onSubmit={(event) => { 
               event.preventDefault(); 
               setSubmitted(true); 

@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import '@fontsource-variable/geist';
 import Footer from './Footer.jsx';
+import RollingNumber from './RollingNumber.jsx';
 import { sitePath } from './paths.js';
 import {
   ArrowDown,
@@ -125,6 +126,7 @@ function AboutPage({ variant = 'original' }) {
   const [founderSlide, setFounderSlide] = useState(0);
   const [activeReason, setActiveReason] = useState(0);
   const tickerRef = useRef(null);
+  const pageRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 24);
@@ -146,10 +148,10 @@ function AboutPage({ variant = 'original' }) {
   }, []);
 
   useEffect(() => {
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (media.matches) return undefined;
+    const media = gsap.matchMedia(pageRef);
 
-    const context = gsap.context(() => {
+    media.add('(prefers-reduced-motion: no-preference)', () => {
+      gsap.fromTo('.about-hero-topline, .about-kicker, #about-title > span, .about-hero-claim, .about-hero-bottomline', { autoAlpha: 0, y: -24 }, { autoAlpha: 1, y: 0, duration: 0.85, stagger: 0.1, ease: 'power3.out' });
       gsap.utils.toArray('[data-about-reveal]').forEach((element) => {
         gsap.fromTo(element, { autoAlpha: 0, y: 30 }, {
           autoAlpha: 1,
@@ -200,7 +202,7 @@ function AboutPage({ variant = 'original' }) {
       }
     });
 
-    return () => context.revert();
+    return () => media.revert();
   }, []);
 
   const closeMenu = () => setMenuOpen(false);
@@ -209,7 +211,7 @@ function AboutPage({ variant = 'original' }) {
   };
 
   return (
-    <div className="about-page">
+    <div className="about-page" ref={pageRef}>
       <header className={`site-header about-header${scrolled ? ' is-scrolled' : ''}${menuOpen ? ' menu-open' : ''}`}>
         <a className="wordmark" href={sitePath('/')} aria-label="Maha Constructions home" onClick={closeMenu}>
           <img src={sitePath('/images/maha-constructions-logo.png')} alt="Maha Constructions" />
@@ -426,6 +428,22 @@ function CompanyAboutPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const tickerRef = useRef(null);
+  const companyRef = useRef(null);
+
+  useEffect(() => {
+    const media = gsap.matchMedia(companyRef);
+    media.add('(prefers-reduced-motion: no-preference)', () => {
+      gsap.fromTo('[data-company-hero] > *', { autoAlpha: 0, y: 24 }, {
+        autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.14, ease: 'power3.out',
+      });
+      gsap.fromTo('[data-company-founder]', { autoAlpha: 0, y: 18 }, {
+        autoAlpha: 1, y: 0, duration: 0.75, stagger: 0.1, ease: 'power2.out',
+        scrollTrigger: { trigger: '#company-founder', start: 'top 85%', once: true },
+      });
+    });
+    return () => media.revert();
+  }, []);
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 24);
     handleScroll();
@@ -439,14 +457,47 @@ function CompanyAboutPage() {
   }, []);
 
   useEffect(() => {
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (media.matches) return undefined;
-    const context = gsap.context(() => {
+    const media = gsap.matchMedia(companyRef);
+    media.add('(prefers-reduced-motion: no-preference)', () => {
       gsap.utils.toArray('[data-company-reveal]').forEach((element) => {
         gsap.fromTo(element, { autoAlpha: 0, y: 28 }, {
           autoAlpha: 1, y: 0, duration: 0.75, ease: 'power2.out',
           scrollTrigger: { trigger: element, start: 'top 88%', once: true },
         });
+      });
+
+      gsap.utils.toArray('.company-milestone').forEach((card, index) => {
+        gsap.fromTo(card, { autoAlpha: 0, y: 44, scale: 0.96 }, {
+          autoAlpha: 1, y: 0, scale: 1, duration: 0.95, delay: index * 0.1, ease: 'power3.out',
+          scrollTrigger: { trigger: card, start: 'top 80%', toggleActions: 'restart none restart reset' },
+        });
+      });
+      gsap.utils.toArray('.metrics-grid, .company-reasons, .company-principles-grid').forEach((group) => {
+        Array.from(group.children).forEach((card, index) => {
+          gsap.fromTo(card, { autoAlpha: 0, y: 28, scale: 0.985 }, {
+            autoAlpha: 1, y: 0, scale: 1, duration: 0.8, delay: index * 0.11, ease: 'power3.out',
+            scrollTrigger: { trigger: card, start: 'top 86%', once: true },
+          });
+        });
+      });
+      gsap.utils.toArray('.rolling-digit-strip').forEach((strip) => {
+        gsap.fromTo(strip, { y: '0em', yPercent: 0 }, {
+          y: `${-Number(strip.dataset.stop) * 1.1}em`, yPercent: 0,
+          duration: 1.2, ease: 'power3.out',
+          scrollTrigger: { trigger: '.metrics-grid', start: 'top 82%', once: true },
+        });
+      });
+      gsap.fromTo('.company-why-copy > .eyebrow, .company-why-copy > h2, .company-why-copy > p', { autoAlpha: 0, y: 18 }, {
+        autoAlpha: 1, y: 0, duration: 0.75, stagger: 0.1, ease: 'power2.out',
+        scrollTrigger: { trigger: '.company-why', start: 'top 85%', once: true },
+      });
+      gsap.fromTo('.values-monogram', { y: 14 }, {
+        y: -14, ease: 'none',
+        scrollTrigger: { trigger: '.company-why', start: 'top bottom', end: 'bottom top', scrub: 1 },
+      });
+      gsap.fromTo('.closing-content > *', { autoAlpha: 0, y: 20 }, {
+        autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.1, ease: 'power2.out',
+        scrollTrigger: { trigger: '.about-closing', start: 'top 85%', once: true },
       });
 
       if (tickerRef.current) {
@@ -458,12 +509,12 @@ function CompanyAboutPage() {
         });
       }
     });
-    return () => context.revert();
+    return () => media.revert();
   }, []);
 
   const closeMenu = () => setMenuOpen(false);
   return (
-    <div className="about-page company-about-page">
+    <div className="about-page company-about-page" ref={companyRef}>
       <header className={`site-header projects-header${scrolled ? ' is-scrolled' : ''}${menuOpen ? ' menu-open' : ''}`}>
         <a className="wordmark" href={sitePath('/')} aria-label="Maha Constructions home" onClick={closeMenu}><img src={sitePath('/images/maha-constructions-logo.png')} alt="Maha Constructions" /></a>
         <button className="menu-toggle" type="button" aria-label={menuOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>
@@ -481,7 +532,7 @@ function CompanyAboutPage() {
       </header>
       <main className="company-about-main">
         <section className="projects-page-hero section-shell" aria-labelledby="company-about-title">
-          <div className="projects-page-hero-copy" data-company-reveal>
+          <div className="projects-page-hero-copy" data-company-hero>
             <span className="eyebrow">About us</span>
             <h1 id="company-about-title">Building with purpose.</h1>
             <p>
@@ -491,13 +542,13 @@ function CompanyAboutPage() {
         </section>
 
         <section className="company-intro section-shell" id="company-founder">
-          <div className="company-intro-aside" data-company-reveal><span className="eyebrow">A word from the founder</span><span className="company-aside-rule"/><span className="company-aside-note">LEADERSHIP · PERSPECTIVE</span></div>
-          <div className="company-founder-copy" data-company-reveal>
+          <div className="company-intro-aside" data-company-founder><span className="eyebrow">A word from the founder</span></div>
+          <div className="company-founder-copy" data-company-founder>
             <h2>“{founderSlides[0].quote}”</h2>
             <p>{founderSlides[0].note}</p>
             <div className="company-attribution"><span/><div><strong>Founder & Managing Director</strong><small>Maha Constructions</small></div></div>
           </div>
-          <div className="company-portrait" data-company-reveal aria-label="Leadership and craftsmanship"><div className="company-portrait-shape"/><span>LEADERSHIP & VISION<br/>MAHA CONSTRUCTIONS</span></div>
+          <div className="company-portrait" data-company-founder aria-label="Leadership and craftsmanship"><div className="company-portrait-shape"/><span>LEADERSHIP & VISION<br/>MAHA CONSTRUCTIONS</span></div>
         </section>
 
         <div className="values-marquee values-marquee-dark" aria-label="Integrity, quality, responsibility and relationships">
@@ -519,7 +570,7 @@ function CompanyAboutPage() {
           <div className="section-meta" data-company-reveal><span>OUR STORY</span><span>FROM THE BEGINNING TO TODAY</span></div>
           <div className="company-story-head" data-company-reveal><span className="eyebrow">Grounded in purpose</span><h2>A journey built<br/>over decades.</h2><p>Two decades of craftsmanship, local roots, and lasting trust across Chennai.</p></div>
           <div className="company-timeline">
-            {milestones.map((item) => <article className="company-milestone" key={item.date} data-company-reveal><span className="company-milestone-dot"/><small>{item.date}</small><h3>{item.title}</h3><p>{item.copy}</p></article>)}
+            {milestones.map((item) => <article className="company-milestone" key={item.date}><span className="company-milestone-dot"/><small>{item.date}</small><h3>{item.title}</h3><p>{item.copy}</p></article>)}
           </div>
         </section>
 
@@ -531,13 +582,13 @@ function CompanyAboutPage() {
           </div>
           <div className="metrics-grid">
             {metrics.map((metric, index) => (
-              <div className="metric" key={metric.label} data-company-reveal>
+              <div className="metric" key={metric.label}>
                 <div className="metric-header">
                   <span className="metric-index">0{index + 1}</span>
                   {metric.tag && <span className="metric-tag">{metric.tag}</span>}
                 </div>
                 <strong className="metric-value">
-                  <span className="metric-num">{metric.num}</span>
+                  <span className="metric-num"><RollingNumber value={metric.num} /></span>
                   <span className="metric-suffix">{metric.suffix}</span>
                 </strong>
                 <span className="metric-label">{metric.label}</span>
@@ -548,18 +599,18 @@ function CompanyAboutPage() {
         </section>
 
         <section className="company-why">
-          <div className="company-why-copy" data-company-reveal><span className="eyebrow">What guides our work</span><h2>Why Maha<br/>Constructions?</h2><p>Deliberate choices, superior materials, and transparent commitments.</p><div className="company-reasons">{reasons.map((reason, index) => <article key={reason.title}><span>0{index + 1}</span><div><h3>{reason.title}</h3><p>{reason.copy}</p></div></article>)}</div></div>
+          <div className="company-why-copy"><span className="eyebrow">What guides our work</span><h2>Why Maha<br/>Constructions?</h2><p>Deliberate choices, superior materials, and transparent commitments.</p><div className="company-reasons">{reasons.map((reason, index) => <article key={reason.title}><span>0{index + 1}</span><div><h3>{reason.title}</h3><p>{reason.copy}</p></div></article>)}</div></div>
           <div className="company-values-visual" data-company-reveal aria-label="Abstract architectural drawing evoking considered company values"><span className="values-monogram">M<span>C</span></span><i/><b/><small>BUILT ON PURPOSE<br/>GROUNDED IN TRUST</small></div>
         </section>
 
         <section className="company-principles section-shell">
           <div className="company-principles-heading" data-company-reveal><span className="eyebrow">How we build matters</span><h2>The principles<br/>behind the work.</h2></div>
-          <div className="company-principles-grid">{principles.map((principle) => <article key={principle.number} data-company-reveal><span>{principle.number}</span><h3>{principle.title}</h3><p>{principle.copy}</p></article>)}</div>
+          <div className="company-principles-grid">{principles.map((principle) => <article key={principle.number}><span>{principle.number}</span><h3>{principle.title}</h3><p>{principle.copy}</p></article>)}</div>
         </section>
 
         <section className="about-closing" aria-labelledby="company-closing-title">
           <div className="closing-drafting" aria-hidden="true"><span>M</span><i /></div>
-          <div className="closing-content" data-company-reveal>
+          <div className="closing-content">
             <span className="eyebrow">A future built together</span>
             <h2 id="company-closing-title">MORE THAN<br />BUILDINGS.<br /><em>WE BUILD WHAT LASTS.</em></h2>
             <p>Every project can become part of something lasting. Start a conversation with Maha Constructions about what comes next.</p>

@@ -17,6 +17,11 @@ test('a named project is not mistaken for a company about question', () => {
   assert.equal(answerQuestion('Tell me about Maha Kuber').topic, 'project');
 });
 
+test('Maha Kuber replies link to the Thirumangalam project route', () => {
+  const response = answerQuestion('Tell me about Maha Kuber');
+  assert.ok(response.links.some(({ path }) => path === '/projects/maha-kuber-thirumangalam'));
+});
+
 test('asks which project instead of inventing context', () => {
   assert.equal(answerQuestion('Where is it?').topic, 'projects');
   assert.ok(!answerQuestion('Where is it?').text.includes(ongoingProjects[0].fullAddress));

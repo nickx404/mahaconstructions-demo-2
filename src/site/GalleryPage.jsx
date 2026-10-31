@@ -161,7 +161,6 @@ const galleryItemsData = [
 
 export default function GalleryPage() {
   const [galleryType, setGalleryType] = useState('photos'); // 'photos' | 'videos'
-  const [activeCategory, setActiveCategory] = useState('All');
   const [selectedItemIndex, setSelectedItemIndex] = useState(null);
   const [layoutMode, setLayoutMode] = useState('grid'); // 'grid' | 'bento'
   const [menuOpen, setMenuOpen] = useState(false);
@@ -175,15 +174,9 @@ export default function GalleryPage() {
 
   const closeMenu = () => setMenuOpen(false);
 
-  // Dynamic items and category pills based on active mediaType
-  const mediaItems = galleryItemsData.filter((item) => item.mediaType === galleryType);
-  const categoryList = ['All', ...Array.from(new Set(mediaItems.map((item) => item.category)))];
+  const visibleItems = galleryItemsData.filter((item) => item.mediaType === galleryType);
 
-  const filteredItems = mediaItems.filter((item) => {
-    return activeCategory === 'All' || item.category === activeCategory;
-  });
-
-  const selectedItem = selectedItemIndex !== null ? filteredItems[selectedItemIndex] : null;
+  const selectedItem = selectedItemIndex !== null ? visibleItems[selectedItemIndex] : null;
 
   // Header scroll detection
   useEffect(() => {
@@ -206,24 +199,23 @@ export default function GalleryPage() {
         setIsPlayingVideo(false);
         setZoomLevel(1);
       } else if (event.key === 'ArrowRight') {
-        setSelectedItemIndex((prev) => (prev + 1) % filteredItems.length);
+        setSelectedItemIndex((prev) => (prev + 1) % visibleItems.length);
         setIsPlayingVideo(false);
         setZoomLevel(1);
       } else if (event.key === 'ArrowLeft') {
-        setSelectedItemIndex((prev) => (prev - 1 + filteredItems.length) % filteredItems.length);
+        setSelectedItemIndex((prev) => (prev - 1 + visibleItems.length) % visibleItems.length);
         setIsPlayingVideo(false);
         setZoomLevel(1);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedItemIndex, filteredItems.length]);
+  }, [selectedItemIndex, visibleItems.length]);
 
   // Initial GSAP Hero and Ambient Motion
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (prefersReducedMotion) return;
+    const media = gsap.matchMedia(pageRef);
+    media.add('(prefers-reduced-motion: no-preference)', () => {
 
       // Hero text reveal timeline
       const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
@@ -267,16 +259,15 @@ export default function GalleryPage() {
         repeat: -1,
         ease: 'none',
       });
-    }, pageRef);
+    });
 
-    return () => ctx.revert();
+    return () => media.revert();
   }, []);
 
-  // Stagger animation on cards when galleryType or category changes
+  // Stagger animation on cards when gallery type or layout changes
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (prefersReducedMotion) return;
+    const media = gsap.matchMedia(gridContainerRef);
+    media.add('(prefers-reduced-motion: no-preference)', () => {
 
       gsap.fromTo('.gallery-card-item',
         { autoAlpha: 0, y: 35, scale: 0.95 },
@@ -289,13 +280,14 @@ export default function GalleryPage() {
           ease: 'power3.out',
         }
       );
-    }, gridContainerRef);
+    });
 
-    return () => ctx.revert();
-  }, [galleryType, activeCategory, layoutMode]);
+    return () => media.revert();
+  }, [galleryType, layoutMode]);
 
   // 3D Magnetic Card Tilt effect on mouse move
   const handleCardMouseMove = (e, index) => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const card = e.currentTarget;
     const rect = card.getBoundingClientRect();
     const x = e.clientX - rect.left - rect.width / 2;
@@ -397,7 +389,7 @@ export default function GalleryPage() {
             </span>
             <span className="gallery-heading-line-wrap">
               <span className="gallery-heading-line">
-                <em className="gradient-shimmer-text">make us.</em>
+                <em className="hero-underlined-text">make us.</em>
               </span>
             </span>
           </h1>
@@ -409,8 +401,8 @@ export default function GalleryPage() {
           {/* Interactive Live Metrics Bar */}
           <div className="gallery-stats-banner">
             <div className="gallery-stat-item">
-              <span className="stat-number">16+</span>
-              <span className="stat-label">Landmark Projects</span>
+              <span className="stat-number">80+</span>
+              <span className="stat-label">Projects completed</span>
             </div>
             <div className="stat-separator" aria-hidden="true" />
             <div className="gallery-stat-item">
@@ -419,12 +411,12 @@ export default function GalleryPage() {
             </div>
             <div className="stat-separator" aria-hidden="true" />
             <div className="gallery-stat-item">
-              <span className="stat-number">4K</span>
-              <span className="stat-label">Media Records</span>
+              <span className="stat-number">509+</span>
+              <span className="stat-label">Happy customers</span>
             </div>
           </div>
 
-          {/* Controls Bar: Toggle & Categories & View Switcher */}
+          {/* Controls Bar: Media Toggle & View Switcher */}
           <div className="gallery-controls-bar">
             {/* Primary Toggle: Photos vs Videos with Fluid Pill */}
             <div className="gallery-toggle-wrapper">
@@ -435,7 +427,6 @@ export default function GalleryPage() {
                   aria-pressed={galleryType === 'photos'} 
                   onClick={() => { 
                     setGalleryType('photos'); 
-                    setActiveCategory('All');
                     setSelectedItemIndex(null); 
                   }}
                 >
@@ -448,7 +439,6 @@ export default function GalleryPage() {
                   aria-pressed={galleryType === 'videos'} 
                   onClick={() => { 
                     setGalleryType('videos'); 
-                    setActiveCategory('All');
                     setSelectedItemIndex(null); 
                   }}
                 >
@@ -456,24 +446,6 @@ export default function GalleryPage() {
                   <span>Video gallery</span>
                 </button>
               </div>
-            </div>
-
-            {/* Category Filter Pills */}
-            <div className="gallery-category-chips" role="group" aria-label="Filter by category">
-              {categoryList.map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  className={`category-chip${activeCategory === cat ? ' is-active' : ''}`}
-                  onClick={() => {
-                    setActiveCategory(cat);
-                    setSelectedItemIndex(null);
-                  }}
-                  aria-pressed={activeCategory === cat}
-                >
-                  {cat}
-                </button>
-              ))}
             </div>
 
             {/* Layout Mode Switcher */}
@@ -504,7 +476,7 @@ export default function GalleryPage() {
           className={`gallery-grid${layoutMode === 'bento' ? ' is-bento-layout' : ''}`} 
           aria-label={galleryType === 'photos' ? 'Photo gallery grid' : 'Video gallery grid'}
         >
-          {filteredItems.map((item, index) => {
+          {visibleItems.map((item, index) => {
             const isVideo = galleryType === 'videos';
             return (
               <button 
@@ -546,10 +518,9 @@ export default function GalleryPage() {
                     <div className="card-arch-lines" aria-hidden="true" />
                   )}
 
-                  {/* Corner Category Tag */}
+                  {/* Artwork Tag */}
                   <div className="card-badge-top">
                     <span className="card-tag-pill">{item.tag}</span>
-                    <span className="card-aspect-pill">{item.category}</span>
                   </div>
 
                   {/* Center Visual Art & Interactive Elements */}
@@ -600,7 +571,6 @@ export default function GalleryPage() {
                 <div className="gallery-card-info">
                   <div className="info-top-row">
                     <span className="item-order-tag">0{index + 1}</span>
-                    <span className="item-spec-tag">{item.spec}</span>
                   </div>
                   <h3 className="gallery-card-title">{item.title}</h3>
                   {item.subtitle && <p className="card-subtitle-line">{item.subtitle}</p>}
@@ -638,7 +608,7 @@ export default function GalleryPage() {
                   {selectedItem.category} • {galleryType === 'photos' ? 'High-Res Photo' : '4K Footage'}
                 </span>
                 <span className="lightbox-counter-pill">
-                  {selectedItemIndex + 1} / {filteredItems.length}
+                  {selectedItemIndex + 1} / {visibleItems.length}
                 </span>
               </div>
 
@@ -773,7 +743,7 @@ export default function GalleryPage() {
                 className="lightbox-nav-btn nav-prev" 
                 aria-label="Previous item" 
                 onClick={() => {
-                  setSelectedItemIndex((prev) => (prev - 1 + filteredItems.length) % filteredItems.length);
+                  setSelectedItemIndex((prev) => (prev - 1 + visibleItems.length) % visibleItems.length);
                   setIsPlayingVideo(false);
                   setZoomLevel(1);
                 }}
@@ -786,7 +756,7 @@ export default function GalleryPage() {
                 className="lightbox-nav-btn nav-next" 
                 aria-label="Next item" 
                 onClick={() => {
-                  setSelectedItemIndex((prev) => (prev + 1) % filteredItems.length);
+                  setSelectedItemIndex((prev) => (prev + 1) % visibleItems.length);
                   setIsPlayingVideo(false);
                   setZoomLevel(1);
                 }}
