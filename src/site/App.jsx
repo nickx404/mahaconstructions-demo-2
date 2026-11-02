@@ -494,11 +494,11 @@ function JointVenturePage() {
             </div>
 
             <div className={`jv-hero-media-card${videoReady ? ' is-ready' : ''}`}>
-              <img className="jv-hero-poster" src={sitePath('/images/jv-family-video-poster.jpg')} alt="" aria-hidden="true" />
+              <img className="jv-hero-poster" src={sitePath('/images/jv-family-video-poster-v2.jpg')} alt="" aria-hidden="true" />
               <video
                 ref={videoRef}
                 className="jv-hero-video"
-                poster={sitePath('/images/jv-family-video-poster.jpg')}
+                poster={sitePath('/images/jv-family-video-poster-v2.jpg')}
                 preload="auto"
                 onPlaying={(event) => {
                   const video = event.currentTarget;
@@ -517,7 +517,7 @@ function JointVenturePage() {
                   e.currentTarget.playbackRate = 0.75;
                 }}
               >
-                <source src={sitePath('/videos/happy-family-home.mp4')} type="video/mp4" />
+                <source src={sitePath('/videos/jv-family-home-v2.mp4')} type="video/mp4" />
               </video>
             </div>
           </div>
