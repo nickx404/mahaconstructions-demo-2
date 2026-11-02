@@ -155,7 +155,7 @@ img { display: block; max-width: 100%; }
 @keyframes heroMobileZoom { from { transform: scale(.97); } to { transform: scale(1); } }
 .hero-picture img { width: 100%; height: 100%; object-fit: cover; object-position: center bottom; will-change: transform; }
 @media (min-width: 701px) {
-  .hero-slide:not(.hero-slide-jv) .hero-picture img { object-position: center top; transform-origin: center top; }
+  .hero-slide:not(.hero-slide-jv) .hero-picture img { object-position: center 15%; transform-origin: center top; }
 }
 .hero-controls { position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); display: flex; align-items: center; gap: 4px; color: white; background: transparent; filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)); z-index: 3; }
 .hero-controls > button { display: grid; width: 44px; height: 44px; padding: 0; place-items: center; border: 0; color: white; background: transparent; opacity: .8; cursor: pointer; transition: opacity .2s ease; }
