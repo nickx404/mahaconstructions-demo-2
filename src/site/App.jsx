@@ -51,10 +51,10 @@ gsap.registerPlugin(ScrollTrigger);
 
 const heroSlides = [
   {
-    desktop: sitePath('/images/hero-maha-kuber-ai-with-logo.jpg'),
+    desktop: sitePath('/images/hero-maha-kuber-desktop-v2.jpg'),
     mobile: sitePath('/images/hero-maha-kuber-mobile.jpg'),
     mobileHref: sitePath('/projects/maha-kuber-thirumangalam'),
-    alt: 'Maha Kuber by Maha Constructions. Luxury homes in the heart of Thirumangalam.',
+    alt: 'Maha Kuber by Maha Constructions. Luxury homes in the heart of Thirumangalam. Just 2 mins from Anna Nagar West. Exclusive 1 & 2 BHK Homes. 100% Vaastu, covered parking and automatic lift. CMDA approved. QR code opens the location in Google Maps.',
     mobileLinkLabel: 'Explore Maha Kuber: luxury homes in the heart of Thirumangalam, Chennai. 1 & 2 BHK homes. View project details.',
   },
   {
