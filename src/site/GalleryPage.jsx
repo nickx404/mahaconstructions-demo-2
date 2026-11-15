@@ -76,84 +76,20 @@ const galleryItemsData = [
     spec: 'Chennai Project Site'
   },
 
-  // --- VIDEO ARCHIVE REELS ---
-  { 
-    id: 'vid-1', 
-    title: 'Site Progress & Groundwork Drone Reel', 
-    subtitle: 'Aerial Site Survey & Excavation',
-    category: 'Architecture', 
+  // Client-supplied videos; titles are used only for accessible player labels.
+  {
+    id: 'vid-1',
+    title: 'Sai Maha Foundation Private Limited',
+    youtubeId: '3995mvdJ4SE',
     mediaType: 'videos',
-    duration: '0:45',
-    resolution: '4K UHD • 60 FPS',
-    tag: 'Site Aerial',
-    aspect: '16/9',
-    description: 'High-definition drone overview showing initial boundary demarcation, soil testing, and excavation layout.',
-    spec: 'Chennai Project Site'
+    description: 'Discover Maha Constructions and the story behind the homes we build.',
   },
-  { 
-    id: 'vid-2', 
-    title: 'RCC Foundation Pouring & Compaction', 
-    subtitle: 'Structural Concrete Pouring',
-    category: 'Craftsmanship', 
+  {
+    id: 'vid-2',
+    title: 'Sai Maha Joint Venture',
+    youtubeId: '9jLh9FUpN2o',
     mediaType: 'videos',
-    duration: '1:12',
-    resolution: '4K UHD • 60 FPS',
-    tag: 'Structural Base',
-    aspect: '4/3',
-    description: 'Machine-mixed M25 grade concrete poured into foundation trenches with mechanical needle vibrator compaction.',
-    spec: 'Secretariat Colony Site'
-  },
-  { 
-    id: 'vid-3', 
-    title: 'Structural Column Alignment & Inspection', 
-    subtitle: 'Precision Level Checking',
-    category: 'Craftsmanship', 
-    mediaType: 'videos',
-    duration: '0:58',
-    resolution: '4K UHD • 60 FPS',
-    tag: 'Quality Audit',
-    aspect: '16/9',
-    description: 'Laser-guided plumbing and alignment checks on vertical RCC columns prior to curing and slab shuttering.',
-    spec: 'Quality Audit Verification'
-  },
-  { 
-    id: 'vid-4', 
-    title: 'Natural Ventilation & Lighting Walkthrough', 
-    subtitle: 'Interior Spatial Flow',
-    category: 'Interiors', 
-    mediaType: 'videos',
-    duration: '1:34',
-    resolution: '4K UHD • 60 FPS',
-    tag: 'Interior Spatial',
-    aspect: '16/9',
-    description: 'Exploring morning daylight dispersion and breeze paths across open-plan living and kitchen zones.',
-    spec: 'Phase II Residential'
-  },
-  { 
-    id: 'vid-5', 
-    title: 'Facade Elevation & Architectural Review', 
-    subtitle: 'Exterior Craftsmanship',
-    category: 'Architecture', 
-    mediaType: 'videos',
-    duration: '0:42',
-    resolution: '4K UHD • 60 FPS',
-    tag: 'Exterior Form',
-    aspect: '16/9',
-    description: 'Cinematic review of exterior textures, waterproofing drip-moulds, and architectural window reveals.',
-    spec: 'Lakshmipuram • Chennai HQ'
-  },
-  { 
-    id: 'vid-6', 
-    title: 'Key Handover & Project Milestone Ceremony', 
-    subtitle: 'Delivered Home Handover',
-    category: 'Milestones', 
-    mediaType: 'videos',
-    duration: '1:48',
-    resolution: '4K UHD • 60 FPS',
-    tag: 'Handover Delivery',
-    aspect: '16/9',
-    description: 'Celebrating the joyous moment as proud homeowners receive their keys and move into their finished home.',
-    spec: 'Maha Constructions Milestone'
+    description: 'Explore joint ventures with Maha Constructions and the possibilities for your land.',
   },
 ];
 
@@ -162,7 +98,6 @@ export default function GalleryPage() {
   const [selectedItemIndex, setSelectedItemIndex] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [isPlayingVideo, setIsPlayingVideo] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
 
   const pageRef = useRef(null);
@@ -193,15 +128,12 @@ export default function GalleryPage() {
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
         setSelectedItemIndex(null);
-        setIsPlayingVideo(false);
         setZoomLevel(1);
       } else if (event.key === 'ArrowRight') {
         setSelectedItemIndex((prev) => (prev + 1) % visibleItems.length);
-        setIsPlayingVideo(false);
         setZoomLevel(1);
       } else if (event.key === 'ArrowLeft') {
         setSelectedItemIndex((prev) => (prev - 1 + visibleItems.length) % visibleItems.length);
-        setIsPlayingVideo(false);
         setZoomLevel(1);
       }
     };
@@ -463,7 +395,6 @@ export default function GalleryPage() {
                 aria-label={`View ${isVideo ? 'video' : 'photo'} ${item.title}`}
                 onClick={() => {
                   setSelectedItemIndex(index);
-                  setIsPlayingVideo(false);
                   setZoomLevel(1);
                 }}
                 onMouseMove={(e) => handleCardMouseMove(e, index)}
@@ -480,11 +411,11 @@ export default function GalleryPage() {
 
                 {/* Card Artwork / Real Photo Canvas */}
                 <div className="gallery-card-art">
-                  {item.image ? (
+                  {item.image || item.youtubeId ? (
                     <div className="card-photo-img-wrap">
                       <img 
-                        src={sitePath(item.image)} 
-                        alt={`${item.title} - ${item.subtitle || ''}`} 
+                        src={item.youtubeId ? `https://i.ytimg.com/vi/${item.youtubeId}/hqdefault.jpg` : sitePath(item.image)} 
+                        alt={item.subtitle ? `${item.title} - ${item.subtitle}` : item.title} 
                         className="card-real-photo" 
                         loading="lazy" 
                       />
@@ -496,9 +427,11 @@ export default function GalleryPage() {
                   )}
 
                   {/* Artwork Tag */}
-                  <div className="card-badge-top">
-                    <span className="card-tag-pill">{item.tag}</span>
-                  </div>
+                  {!isVideo && (
+                    <div className="card-badge-top">
+                      <span className="card-tag-pill">{item.tag}</span>
+                    </div>
+                  )}
 
                   {/* Center Visual Art & Interactive Elements */}
                   {isVideo ? (
@@ -507,20 +440,6 @@ export default function GalleryPage() {
                         <Play size={22} weight="fill" aria-hidden="true" />
                         <span className="play-pulse-ring wave-1" />
                         <span className="play-pulse-ring wave-2" />
-                      </div>
-
-                      {/* Equalizer Audio Soundwave Animation on Hover */}
-                      <div className="video-soundwave-anim" aria-hidden="true">
-                        <span className="soundwave-bar bar-1" />
-                        <span className="soundwave-bar bar-2" />
-                        <span className="soundwave-bar bar-3" />
-                        <span className="soundwave-bar bar-4" />
-                        <span className="soundwave-bar bar-5" />
-                      </div>
-
-                      <div className="video-meta-badge">
-                        <span className="video-time-tag">{item.duration}</span>
-                        <span className="video-res-tag">{item.resolution}</span>
                       </div>
                     </div>
                   ) : (
@@ -539,18 +458,22 @@ export default function GalleryPage() {
                   {/* Hover Inspect Banner */}
                   <div className="card-hover-scrim">
                     <span className="scrim-inspect-text">
-                      <Eye size={15} weight="bold" aria-hidden="true" /> Click to Inspect
+                      <Eye size={15} weight="bold" aria-hidden="true" /> {isVideo ? 'Watch video' : 'Click to Inspect'}
                     </span>
                   </div>
                 </div>
 
                 {/* Card Information Footer */}
                 <div className="gallery-card-info">
-                  <div className="info-top-row">
-                    <span className="item-order-tag">0{index + 1}</span>
-                  </div>
-                  <h3 className="gallery-card-title">{item.title}</h3>
-                  {item.subtitle && <p className="card-subtitle-line">{item.subtitle}</p>}
+                  {!isVideo && (
+                    <>
+                      <div className="info-top-row">
+                        <span className="item-order-tag">0{index + 1}</span>
+                      </div>
+                      <h3 className="gallery-card-title">{item.title}</h3>
+                      {item.subtitle && <p className="card-subtitle-line">{item.subtitle}</p>}
+                    </>
+                  )}
                   <p className="card-snippet-desc">{item.description}</p>
                 </div>
               </button>
@@ -567,7 +490,6 @@ export default function GalleryPage() {
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) {
               setSelectedItemIndex(null);
-              setIsPlayingVideo(false);
               setZoomLevel(1);
             }
           }}
@@ -582,7 +504,7 @@ export default function GalleryPage() {
             <div className="lightbox-header-bar">
               <div className="lightbox-title-wrap">
                 <span className="lightbox-category-pill">
-                  {selectedItem.category} • {galleryType === 'photos' ? 'High-Res Photo' : '4K Footage'}
+                  {galleryType === 'photos' ? `${selectedItem.category} • High-Res Photo` : 'Video'}
                 </span>
                 <span className="lightbox-counter-pill">
                   {selectedItemIndex + 1} / {visibleItems.length}
@@ -604,11 +526,11 @@ export default function GalleryPage() {
 
                 <button 
                   type="button" 
-                  className="gallery-lightbox-close" 
+                  className="gallery-lightbox-close"
+                  autoFocus
                   aria-label="Close viewer" 
                   onClick={() => {
                     setSelectedItemIndex(null);
-                    setIsPlayingVideo(false);
                     setZoomLevel(1);
                   }}
                 >
@@ -618,75 +540,17 @@ export default function GalleryPage() {
             </div>
 
             {/* Modal Media Stage */}
-            <div className="lightbox-media-stage">
+            <div className={`lightbox-media-stage${galleryType === 'videos' ? ' is-video-stage' : ''}`}>
               {galleryType === 'videos' ? (
-                <div className="cinema-player-wrapper">
-                  <div className="cinema-screen-placeholder">
-                    {isPlayingVideo ? (
-                      <div className="simulated-stream-view">
-                        <div className="live-stream-overlay">
-                          <span className="rec-dot" />
-                          <span>4K UHD MASTER • 60 FPS • SITE FOOTAGE</span>
-                        </div>
-                        <div className="stream-center-badge">
-                          <VideoCamera size={44} weight="duotone" />
-                          <p>Streaming Architectural Footage</p>
-                          <small>{selectedItem.spec}</small>
-                        </div>
-                        {/* Audio Wave Visualizer inside player */}
-                        <div className="player-waveform-bar" aria-hidden="true">
-                          {Array.from({ length: 28 }).map((_, i) => (
-                            <span 
-                              key={i} 
-                              className="stream-wave-stick" 
-                              style={{ animationDelay: `${(i % 7) * 0.12}s` }} 
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="player-thumbnail-view">
-                        <div className="player-blueprint-mesh" />
-                        <button 
-                          type="button" 
-                          className="cinema-play-button"
-                          onClick={() => setIsPlayingVideo(true)}
-                          aria-label="Play video preview"
-                        >
-                          <Play size={32} weight="fill" />
-                          <span className="play-pulse-ring wave-1" />
-                        </button>
-                        <span className="player-start-label">Click to Play 4K Preview</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Interactive Mock Video Player Control Bar */}
-                  <div className="cinema-controls-bar">
-                    <button 
-                      type="button" 
-                      className="cinema-play-toggle-btn"
-                      onClick={() => setIsPlayingVideo((playing) => !playing)}
-                      aria-label={isPlayingVideo ? 'Pause' : 'Play'}
-                    >
-                      <Play size={16} weight="fill" />
-                    </button>
-
-                    <div className="cinema-scrubber-track">
-                      <div 
-                        className={`cinema-scrubber-fill${isPlayingVideo ? ' is-scrubbing' : ''}`} 
-                      />
-                    </div>
-
-                    <div className="cinema-time-tags">
-                      <span>{isPlayingVideo ? '00:24' : '00:00'}</span>
-                      <span>/</span>
-                      <span>{selectedItem.duration}</span>
-                    </div>
-
-                    <span className="cinema-quality-chip">4K HDR</span>
-                  </div>
-                </div>
+                <iframe
+                  key={selectedItem.youtubeId}
+                  className="gallery-youtube-player"
+                  src={`https://www.youtube-nocookie.com/embed/${selectedItem.youtubeId}?autoplay=1&playsinline=1&rel=0`}
+                  title={selectedItem.title}
+                  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                />
               ) : (
                 <div className="cinema-photo-wrapper">
                   {selectedItem.image ? (
@@ -721,7 +585,6 @@ export default function GalleryPage() {
                 aria-label="Previous item" 
                 onClick={() => {
                   setSelectedItemIndex((prev) => (prev - 1 + visibleItems.length) % visibleItems.length);
-                  setIsPlayingVideo(false);
                   setZoomLevel(1);
                 }}
               >
@@ -734,7 +597,6 @@ export default function GalleryPage() {
                 aria-label="Next item" 
                 onClick={() => {
                   setSelectedItemIndex((prev) => (prev + 1) % visibleItems.length);
-                  setIsPlayingVideo(false);
                   setZoomLevel(1);
                 }}
               >
@@ -745,12 +607,12 @@ export default function GalleryPage() {
             {/* Modal Info Footer */}
             <div className="lightbox-details-footer">
               <div className="lightbox-desc-block">
-                <h3>{selectedItem.title}</h3>
+                {galleryType === 'photos' && <h3>{selectedItem.title}</h3>}
                 {selectedItem.subtitle && <h4 className="lightbox-subtitle">{selectedItem.subtitle}</h4>}
                 <p>{selectedItem.description}</p>
               </div>
 
-              <div className="lightbox-spec-matrix">
+              {galleryType === 'photos' && <div className="lightbox-spec-matrix">
                 <div className="spec-item">
                   <span className="spec-label">Ceremony / Site</span>
                   <span className="spec-value">{selectedItem.spec}</span>
@@ -763,7 +625,7 @@ export default function GalleryPage() {
                   <span className="spec-label">Classification</span>
                   <span className="spec-value">{selectedItem.tag}</span>
                 </div>
-              </div>
+              </div>}
 
               <div className="lightbox-keyboard-hint">
                 <span>Navigate: <strong>←</strong> / <strong>→</strong></span>
