@@ -414,8 +414,8 @@ export default function GalleryPage() {
                   {item.image || item.youtubeId ? (
                     <div className="card-photo-img-wrap">
                       <img 
-                        src={item.youtubeId ? `https://i.ytimg.com/vi/${item.youtubeId}/hqdefault.jpg` : sitePath(item.image)} 
-                        alt={item.subtitle ? `${item.title} - ${item.subtitle}` : item.title} 
+                        src={item.youtubeId ? `https://i.ytimg.com/vi/${item.youtubeId}/hqdefault.jpg` : sitePath(item.image)}
+                        alt={item.subtitle ? `${item.title} - ${item.subtitle}` : item.title}
                         className="card-real-photo" 
                         loading="lazy" 
                       />
