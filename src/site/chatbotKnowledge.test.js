@@ -6,11 +6,39 @@ import { completedProjects, ongoingProjects } from './siteContent.js';
 test('answers project questions with shared website facts and remembers the project for follow-ups', () => {
   const listing = answerQuestion('Can you explain your projects?');
   for (const project of ongoingProjects) assert.ok(listing.text.includes(project.name));
-  const location = answerQuestion('Where is it?', listing);
+  assert.deepEqual(listing.choices, ongoingProjects.map((project) => project.name));
+  assert.equal(listing.projectSlug, undefined);
+  const selected = answerQuestion('Maha Kuber', listing);
+  const location = answerQuestion('Where is it?', selected);
   assert.ok(location.text.includes(ongoingProjects[0].fullAddress));
   const sizes = answerQuestion('What sizes are available?', location);
   assert.ok(sizes.text.includes('540 - 960 sq.ft'));
   assert.ok(sizes.text.includes('1 & 2 BHK'));
+});
+
+test('Achyuda selection preserves context without borrowing Kuber facts', () => {
+  const project = ongoingProjects.find((item) => item.slug === 'mahaa-achyuda-periyar-nagar');
+  const selected = answerQuestion('Tell me about Achyuda');
+  assert.equal(selected.projectSlug, project.slug);
+  assert.equal(selected.links[0].path, `/projects/${project.slug}`);
+  const location = answerQuestion('Where is it?', selected);
+  assert.ok(location.text.includes('Periyar Nagar, Chennai'));
+  assert.ok(location.text.includes('pending confirmation'));
+  assert.ok(!location.text.includes('undefined'));
+  assert.ok(!location.text.includes(ongoingProjects[0].fullAddress));
+  const sizes = answerQuestion('yes', location);
+  assert.ok(sizes.text.includes('2 & 3 BHK'));
+  assert.ok(sizes.text.includes('878–1,198 sq.ft'));
+  assert.ok(!sizes.text.includes('540 - 960'));
+  const plans = answerQuestion('Show floor plans', sizes);
+  assert.equal(plans.links[0].path, `/projects/${project.slug}#floor-plans`);
+  const amenities = answerQuestion('What amenities are listed?', plans);
+  assert.ok(amenities.text.includes('Covered Car Parking'));
+  assert.equal(amenities.projectSlug, project.slug);
+  assert.equal(project.totalHomes, 6);
+  for (const field of ['fullAddress', 'mapEmbedUrl', 'gallery', 'landmarks']) assert.equal(project[field], undefined);
+  assert.ok(!project.details.includes('Bank Loan Available'));
+  assert.deepEqual(answerQuestion('Show floor plans').choices, ongoingProjects.map((item) => item.name));
 });
 
 test('a named project is not mistaken for a company about question', () => {
@@ -56,4 +84,16 @@ test('floor-plan requests link to the actual section without promising a documen
   const response = answerQuestion('Can you share the floor plan through WhatsApp?', { projectSlug: ongoingProjects[0].slug });
   assert.equal(response.links[0].path, `/projects/${ongoingProjects[0].slug}#floor-plans`);
   assert.ok(response.text.includes('consultation'));
+});
+
+test('yes answers the offered configuration question and then starts the offered callback', () => {
+  const location = answerQuestion('Where is Maha Kuber?');
+  assert.equal(location.followUp, 'configurations');
+  const sizes = answerQuestion('yes', location);
+  assert.ok(sizes.text.includes('540 - 960 sq.ft'));
+  assert.equal(sizes.followUp, 'callback');
+  assert.equal(answerQuestion('yes please', sizes).action, 'callback');
+  assert.equal(answerQuestion('yes', answerQuestion('Joint venture')).action, 'joint-venture');
+  assert.equal(answerQuestion('yes', answerQuestion('What is your email?')).action, 'callback');
+  assert.equal(answerQuestion('yes', { topic: 'about' }).action, undefined);
 });

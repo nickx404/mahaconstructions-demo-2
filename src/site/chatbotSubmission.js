@@ -1,5 +1,5 @@
 const SESSION_KEY = 'maha-chatbot-saved-contact';
-export const leadDeliveryEnabled = Boolean(import.meta.env.VITE_CHATBOT_LEAD_URL);
+export const leadDeliveryEnabled = Boolean(import.meta.env?.VITE_CHATBOT_LEAD_URL);
 
 export function readSavedContact() {
   try {
@@ -23,8 +23,7 @@ export function validateContact(name, phone, email = '') {
 }
 
 // A form POST avoids cross-origin fetch restrictions; only a verified receipt means saved.
-export function submitChatbotContact(contact) {
-  const endpoint = import.meta.env.VITE_CHATBOT_LEAD_URL;
+export function submitChatbotContact(contact, endpoint = import.meta.env?.VITE_CHATBOT_LEAD_URL) {
   if (!endpoint || !/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(endpoint)) {
     return Promise.reject(new Error('Online enquiries are not connected yet. Please use our Contact page to reach the team.'));
   }

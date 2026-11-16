@@ -1,3 +1,4 @@
+import EnquiryContactFields, { validateEnquiryContact } from './EnquiryContactFields.jsx';
 import { useState, useEffect, useRef } from 'react';
 import { 
   ArrowUpRight, 
@@ -29,7 +30,7 @@ export default function ContactPage() {
   const [copiedField, setCopiedField] = useState(null);
   const [chennaiTime, setChennaiTime] = useState('');
   const [selectedEnquiries, setSelectedEnquiries] = useState([chatbotLead?.intent === 'joint-venture' ? 'Joint Venture' : 'General Inquiry']);
-  const [formValues, setFormValues] = useState({ name: chatbotLead?.name || '', phone: chatbotLead?.phone || '', email: chatbotLead?.email || '', message: chatbotLead ? chatbotMessage(chatbotLead) : '' });
+  const [formValues, setFormValues] = useState({ name: chatbotLead?.name || '', phone: chatbotLead?.phone || '', email: chatbotLead?.email || '', location: chatbotLead?.location || '', message: chatbotLead ? chatbotMessage(chatbotLead) : '' });
 
   useEffect(() => {
     clearChatbotLead();
@@ -37,7 +38,7 @@ export default function ContactPage() {
       const lead = readChatbotLead();
       if (!lead) return;
       setChatbotLead(lead);
-      setFormValues((current) => ({ ...current, name: lead.name, phone: lead.phone, email: lead.email || current.email, message: chatbotMessage(lead) }));
+      setFormValues((current) => ({ ...current, name: lead.name, phone: lead.phone, email: lead.email || current.email, location: lead.location || '', message: chatbotMessage(lead) }));
       setSelectedEnquiries([lead.intent === 'joint-venture' ? 'Joint Venture' : 'General Inquiry']);
       setSubmitted(false);
       clearChatbotLead();
@@ -319,7 +320,7 @@ export default function ContactPage() {
             className="contact-page-form" 
             onSubmit={(event) => { 
               event.preventDefault(); 
-              setSubmitted(true); 
+              if (validateEnquiryContact(event.currentTarget)) setSubmitted(true); 
             }}
           >
             {/* Top Light-Beam Animation */}
@@ -330,52 +331,12 @@ export default function ContactPage() {
                 <span className="eyebrow">Your enquiry</span>
                 <h2>How can we help?</h2>
               </div>
-              <span className="form-req-pill">All fields required</span>
+              <span className="form-req-pill">Name and phone required</span>
             </div>
 
             {chatbotLead && <p className="chatbot-handoff-note">Your chatbot details are filled in below. Review them and add any further information to your enquiry.</p>}
 
-            <div className="form-row contact-form-field">
-              <label className="animated-input-group">
-                <span>Name</span>
-                <input 
-                  name="name" 
-                  autoComplete="name" 
-                  placeholder="Your full name" 
-                  required 
-                  value={formValues.name}
-                  onChange={(e) => setFormValues({ ...formValues, name: e.target.value })}
-                />
-              </label>
-
-              <label className="animated-input-group">
-                <span>Phone number</span>
-                <input 
-                  name="phone" 
-                  type="tel" 
-                  autoComplete="tel" 
-                  placeholder="+91 90000 00000" 
-                  required 
-                  value={formValues.phone}
-                  onChange={(e) => setFormValues({ ...formValues, phone: e.target.value })}
-                />
-              </label>
-            </div>
-
-            <div className="contact-form-field">
-              <label className="animated-input-group">
-                <span>Email address</span>
-                <input 
-                  name="email" 
-                  type="email" 
-                  autoComplete="email" 
-                  placeholder="you@example.com" 
-                  required 
-                  value={formValues.email}
-                  onChange={(e) => setFormValues({ ...formValues, email: e.target.value })}
-                />
-              </label>
-            </div>
+            <EnquiryContactFields values={formValues} landowner={selectedEnquiries.includes('Joint Venture')} onChange={(event) => { setSubmitted(false); setFormValues((current) => ({ ...current, [event.target.name]: event.target.value })); }} />
 
             <fieldset className="contact-enquiry-types contact-form-field">
               <legend>What would you like to discuss?</legend>
@@ -406,12 +367,11 @@ export default function ContactPage() {
 
             <div className="contact-form-field">
               <label className="animated-input-group">
-                <span>Message</span>
+                <span>Message (optional)</span>
                 <textarea 
                   name="message" 
                   rows="4" 
                   placeholder="Share a few details about your property, requirements, or vision..." 
-                  required 
                   value={formValues.message}
                   onChange={(e) => setFormValues({ ...formValues, message: e.target.value })}
                 />

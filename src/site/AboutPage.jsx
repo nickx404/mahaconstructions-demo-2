@@ -20,7 +20,7 @@ const founderSlides = [
   {
     label: 'A word from the founder',
     quote: 'We don’t just build spaces. We build trust that lasts.',
-    note: 'Crafting enduring homes across Chennai with quiet precision and honest commitments.',
+    note: 'Thoughtful planning. Quality materials. Care in every detail. Homes built to last, with people at the heart of every decision.',
   },
   {
     label: 'Our founding philosophy',
@@ -89,20 +89,20 @@ const metrics = [
 
 const reasons = [
   {
-    title: 'Experience, with perspective',
-    copy: 'Over 35 years of engineering expertise and structural discipline across Chennai.',
+    title: 'Thoughtful planning',
+    copy: 'Spaces shaped around people’s needs and everyday lives.',
   },
   {
-    title: 'A grounded understanding of place',
-    copy: 'Prime Chennai locations chosen for strong infrastructure, sweet water, and connectivity.',
+    title: 'Quality at the core',
+    copy: 'Carefully chosen materials, structural stability, and attention to detail.',
   },
   {
-    title: 'Care in the details',
-    copy: '100% Vaastu compliance, optimal ventilation, and earthquake-resistant RCC construction.',
+    title: 'Coordinated execution',
+    copy: 'Planning, approvals coordination, and construction brought together.',
   },
   {
-    title: 'Relationships built to last',
-    copy: 'Clear titles, transparent agreements, and responsive post-handover support.',
+    title: 'Care in every detail',
+    copy: 'Space, light, and finishes considered for comfort and practical use.',
   },
 ];
 
@@ -279,7 +279,7 @@ function AboutPage({ variant = 'original' }) {
               <p className="founder-note">{founderSlides[founderSlide].note}</p>
               <div className="founder-attribution">
                 <span className="attribution-rule" />
-                <div><strong>Founder & Managing Director</strong><span>Maha Constructions</span></div>
+                <div><strong>Mr. V. Satish Kumar</strong><span>Founder & Managing Director · Maha Constructions</span></div>
               </div>
               <div className="founder-controls" aria-label="Founder story controls">
                 <span>0{founderSlide + 1} <i /> 0{founderSlides.length}</span>
@@ -546,9 +546,12 @@ function CompanyAboutPage() {
           <div className="company-founder-copy" data-company-founder>
             <h2>“{founderSlides[0].quote}”</h2>
             <p>{founderSlides[0].note}</p>
-            <div className="company-attribution"><span/><div><strong>Founder & Managing Director</strong><small>Maha Constructions</small></div></div>
+            <div className="company-attribution"><span/><div><strong>Mr. V. Satish Kumar</strong><small>Founder & Managing Director · Maha Constructions</small></div></div>
           </div>
-          <div className="company-portrait" data-company-founder aria-label="Leadership and craftsmanship"><div className="company-portrait-shape"/><span>LEADERSHIP & VISION<br/>MAHA CONSTRUCTIONS</span></div>
+          <a className="company-founder-project" data-company-founder href={sitePath('/projects/maha-kuber-thirumangalam')}>
+            <img src={sitePath('/images/maha-kuber-elevation-expanded.png')} alt="Maha Kuber building elevation in Thirumangalam" loading="lazy" width="1448" height="1086" />
+            <span>Maha Kuber <span>View project <ArrowUpRight size={18} aria-hidden="true" /></span></span>
+          </a>
         </section>
 
         <div className="values-marquee values-marquee-dark" aria-label="Integrity, quality, responsibility and relationships">
@@ -568,7 +571,7 @@ function CompanyAboutPage() {
 
         <section className="company-story" id="company-story">
           <div className="section-meta" data-company-reveal><span>OUR STORY</span><span>FROM THE BEGINNING TO TODAY</span></div>
-          <div className="company-story-head" data-company-reveal><span className="eyebrow">Grounded in purpose</span><h2>A journey built<br/>over decades.</h2><p>Two decades of craftsmanship, local roots, and lasting trust across Chennai.</p></div>
+          <div className="company-story-head" data-company-reveal><span className="eyebrow">Grounded in purpose</span><h2>A journey built<br/>over decades.</h2><p>Rooted in Chennai since 1990. Bringing thoughtful planning and careful execution to homes, construction, and interiors.</p></div>
           <div className="company-timeline">
             {milestones.map((item) => <article className="company-milestone" key={item.date}><span className="company-milestone-dot"/><small>{item.date}</small><h3>{item.title}</h3><p>{item.copy}</p></article>)}
           </div>
@@ -600,7 +603,7 @@ function CompanyAboutPage() {
 
         <section className="company-why">
           <div className="company-why-copy"><span className="eyebrow">What guides our work</span><h2>Why Maha<br/>Constructions?</h2><p>Deliberate choices, superior materials, and transparent commitments.</p><div className="company-reasons">{reasons.map((reason, index) => <article key={reason.title}><span>0{index + 1}</span><div><h3>{reason.title}</h3><p>{reason.copy}</p></div></article>)}</div></div>
-          <div className="company-values-visual" data-company-reveal aria-label="Abstract architectural drawing evoking considered company values"><span className="values-monogram">M<span>C</span></span><i/><b/><small>BUILT ON PURPOSE<br/>GROUNDED IN TRUST</small></div>
+          <div className="company-values-visual" data-company-reveal aria-label="MC monogram representing Maha Constructions values"><span className="values-monogram">M<span>C</span></span><small>BUILT ON PURPOSE<br/>GROUNDED IN TRUST</small></div>
         </section>
 
         <section className="company-principles section-shell">
@@ -609,7 +612,7 @@ function CompanyAboutPage() {
         </section>
 
         <section className="about-closing" aria-labelledby="company-closing-title">
-          <div className="closing-drafting" aria-hidden="true"><span>M</span><i /></div>
+          <div className="closing-drafting" aria-hidden="true"><span>M<em>C</em></span></div>
           <div className="closing-content">
             <span className="eyebrow">A future built together</span>
             <h2 id="company-closing-title">MORE THAN<br />BUILDINGS.<br /><em>WE BUILD WHAT LASTS.</em></h2>

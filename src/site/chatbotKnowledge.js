@@ -7,14 +7,19 @@ const projectLink = (project, anchor = '') => link(`${project.name} project page
 // This is a local, scripted knowledge bank, not an AI service. Only shared site facts become answers.
 export function answerQuestion(question, context = {}) {
   const text = normalize(question);
-  const namedProject = ongoingProjects.find((project) => text.includes(normalize(project.name)) || text.includes(normalize(project.name.replace(/^Maha /, ''))));
+  if (/^(yes|yes please|sure|okay|ok|please do)$/.test(text)) {
+    if (context.followUp === 'configurations') return answerQuestion('What sizes are available?', { ...context, followUp: undefined });
+    if (context.followUp === 'callback') return { topic: 'callback', action: 'callback', projectSlug: context.projectSlug };
+    if (context.followUp === 'landowner-enquiry') return { topic: 'joint-venture', action: 'joint-venture' };
+  }
+  const namedProject = ongoingProjects.find((project) => text.includes(normalize(project.name)) || text.includes(normalize(project.name.replace(/^Mahaa? /, ''))));
   const project = namedProject || ongoingProjects.find((item) => item.slug === context.projectSlug);
   const archiveProject = completedProjects.find((item) => text.includes(normalize(item.name)));
   const reply = (topic, content) => ({ topic, projectSlug: namedProject?.slug || context.projectSlug, ...content });
   const callback = { label: 'Request a callback', action: 'callback' };
   const projectChoices = ['Where is it?', 'What sizes are available?', 'What amenities are listed?'];
 
-  if (/\b(cancel|stop|never mind|nevermind|main menu|start over)\b/.test(text)) {
+  if (/^(restart|cancel|stop|never mind|nevermind|main menu|start over)$/.test(text)) {
     return reply('menu', { text: 'Of course. What would you like to know?', choices: ['Ongoing projects', 'Joint venture', 'Request a callback'] });
   }
   if (/\b(no|not|dont|do not|without|skip)\b/.test(text) && /\b(callback|call|contact details|phone number)\b/.test(text)) {
@@ -33,6 +38,7 @@ export function answerQuestion(question, context = {}) {
         /\b(possession|handover|completion date|ready to move)\b/.test(text) ? 'Possession and completion dates' :
           /\b(availability|available units|vacant|stock)\b/.test(text) ? 'Current unit availability details' : 'Investment returns and guarantees';
     return reply('callback-offer', {
+      followUp: 'callback',
       text: `${subject}${project ? ` for ${project.name}` : ''} need confirmation from our authorized team. Would you like me to help you request a callback?`,
       links: project ? [projectLink(project)] : [link('Contact our team', '/contact#contact-form')],
       choices: [callback, 'Keep exploring projects'],
@@ -40,6 +46,7 @@ export function answerQuestion(question, context = {}) {
   }
   if (/\b(joint venture|joint ventures|jv|landowner|land owner|partnership|partner|develop my land|have (a )?land|own (some )?land|plot dimensions)\b/.test(text)) {
     return reply('joint-venture', {
+      followUp: 'landowner-enquiry',
       text: `${jointVentureReply} Would you like me to help you start a landowner enquiry, or would you prefer to read about our approach first?`,
       links: [link('Our joint venture approach', '/joint-venture')],
       choices: [{ label: 'Start a landowner enquiry', action: 'joint-venture' }, 'What services do you offer?'],
@@ -64,9 +71,9 @@ export function answerQuestion(question, context = {}) {
     }), projectSlug: selected?.slug };
   }
   if (/\b(office|contact details|phone number|phone no|whatsapp|email|reach you|contact you|contact number|directions)\b/.test(text)) {
-    return reply('contact', { text: 'You can find our phone, email, office address, and map directions on the Contact page. Would you like to leave an enquiry for our team?', links: [link('Contact details and directions', '/contact')], choices: [callback, 'Ongoing projects'] });
+    return reply('contact', { followUp: 'callback', text: 'You can find our phone, email, office address, and map directions on the Contact page. Would you like to leave an enquiry for our team?', links: [link('Contact details and directions', '/contact')], choices: [callback, 'Ongoing projects'] });
   }
-  if (/\b(services|service|what do you do|what you do|construction work|building contract|commercial|land development)\b/.test(text)) {
+  if (/\b(services|service|what do you do|what you do|construction work|construction services|construction requirements?|building requirements?|building (a |my |our )?(house|home)|build (a |my |our )?(house|home)|building contract|commercial|land development)\b/.test(text)) {
     return reply('services', { text: `We work across ${services.map((item) => item.title.toLowerCase()).join(', ')}. What are you looking to explore?`, links: [link('Explore our services', '/#services')], choices: ['Ongoing projects', 'Joint venture', callback] });
   }
   if (/\b(about maha constructions|company|who are you|who is maha|mission|history|experience|founder)\b/.test(text) || /^(about|about us)$/.test(text)) {
@@ -79,10 +86,10 @@ export function answerQuestion(question, context = {}) {
   const projectDetail = /\b(where|located|location|address|size|sizes|sq ft|sqft|square feet|bhk|configuration|configurations|amenities|features|parking|lift|elevator|cctv|rainwater|it|this|that|more|details)\b/.test(text);
   if (project && (namedProject || projectDetail)) {
     if (/\b(where|location|located|address)\b/.test(text)) {
-      return reply('project', { text: `${project.name} is in ${project.location}. The address listed on its project page is ${project.fullAddress} Would you like to see its configurations?`, links: [projectLink(project, '#location')], choices: ['What sizes are available?', callback] });
+      return reply('project', { followUp: 'configurations', text: `${project.name} is in ${project.location}. ${project.fullAddress ? `The address listed on its project page is ${project.fullAddress}` : 'The exact project address and map are pending confirmation.'} Would you like to see its configurations?`, links: [projectLink(project, '#location')], choices: ['What sizes are available?', callback] });
     }
     if (/\b(size|sizes|sq ft|sqft|square feet|bhk|configuration|configurations)\b/.test(text)) {
-      return reply('project', { text: `${project.name}’s page lists ${project.details.slice(0, 3).join(' · ')}. Current unit availability needs confirmation from our team. Would you like to enquire about this project?`, links: [projectLink(project, '#project-details')], choices: [callback, 'What amenities are listed?'] });
+      return reply('project', { followUp: 'callback', text: `${project.name}’s page lists ${project.details.slice(0, 3).join(' · ')}. Current unit availability needs confirmation from our team. Would you like to enquire about this project?`, links: [projectLink(project, '#project-details')], choices: [callback, 'What amenities are listed?'] });
     }
     if (/\b(amenities|features|parking|lift|elevator|cctv|rainwater)\b/.test(text)) {
       return reply('project', { text: `The ${project.name} project page lists ${project.amenities.join(', ')}. Our team can confirm the specifications for your enquiry.`, links: [projectLink(project, '#amenities')], choices: [callback, 'Where is it?'] });

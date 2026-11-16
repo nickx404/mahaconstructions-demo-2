@@ -1,3 +1,4 @@
+import EnquiryContactFields, { validateEnquiryContact } from './EnquiryContactFields.jsx';
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -664,28 +665,15 @@ function JointVenturePage() {
 
         <section className="jv-enquiry-section" id="jv-enquiry" aria-labelledby="jv-enquiry-title">
           <div className="jv-enquiry-intro" data-jv-reveal><span className="eyebrow">Landowner enquiry</span><h2 id="jv-enquiry-title">Have land you want to develop?</h2><p>Tell us about your property. Let’s explore the opportunity together.</p><a href="mailto:saimaha1000@gmail.com">saimaha1000@gmail.com <ArrowUpRight size={15} aria-hidden="true" /></a></div>
-          <form className="contact-page-form site-enquiry-form" onSubmit={(event) => { event.preventDefault(); setFormSubmitted(true); }}>
+          <form className="contact-page-form site-enquiry-form" onSubmit={(event) => { event.preventDefault(); if (validateEnquiryContact(event.currentTarget)) setFormSubmitted(true); }}>
             <div className="contact-page-form-heading">
               <div>
                 <span className="eyebrow">Your enquiry</span>
                 <h2>How can we help?</h2>
               </div>
-              <span className="form-req-pill">All fields required</span>
+              <span className="form-req-pill">Name and phone required</span>
             </div>
-            <div className="form-row">
-              <label className="animated-input-group">
-                <span>Name</span>
-                <input name="name" autoComplete="name" placeholder="Your full name" required />
-              </label>
-              <label className="animated-input-group">
-                <span>Phone number</span>
-                <input name="phone" type="tel" autoComplete="tel" placeholder="Your phone number" required />
-              </label>
-            </div>
-            <label className="animated-input-group">
-              <span>Email address</span>
-              <input name="email" type="email" autoComplete="email" placeholder="you@example.com" required />
-            </label>
+            <EnquiryContactFields landowner onChange={() => setFormSubmitted(false)} />
             <fieldset className="contact-enquiry-types">
               <legend>What would you like to discuss?</legend>
               <div className="enquiry-chips-row">
@@ -699,14 +687,14 @@ function JointVenturePage() {
               </div>
             </fieldset>
             <label className="animated-input-group">
-              <span>Message</span>
-              <textarea name="message" rows="5" placeholder="Share a few details about your property or enquiry" required />
+              <span>Message (optional)</span>
+              <textarea name="message" rows="5" placeholder="Share a few details about your property or enquiry" />
             </label>
             <button className="button button-green magnetic-button" type="submit">
-              Send enquiry <ArrowUpRight size={16} aria-hidden="true" />
+              Prepare enquiry <ArrowUpRight size={16} aria-hidden="true" />
             </button>
             <p className={`contact-page-form-note form-note${formSubmitted ? ' is-visible' : ''}`} aria-live="polite">
-              {formSubmitted ? 'Thanks for reaching out. Form submission will be enabled once the enquiry service is connected.' : 'This form is a preview and does not send messages yet.'}
+              {formSubmitted ? 'Your enquiry is prepared. Online sending is not connected yet; your details remain in the form.' : 'This form is a preview and does not send messages yet.'}
             </p>
           </form>
         </section>
@@ -738,15 +726,20 @@ function JointVenturePage() {
 
 function OngoingProjectPage({ project }) {
   const [activePlan, setActivePlan] = useState(0);
+  const [galleryExpanded, setGalleryExpanded] = useState(false);
   const [activeSection, setActiveSection] = useState('overview');
   const planTabsRef = useRef(null);
-  const plans = ['1 BHK Layout', '2 BHK Layout', 'Master Plan'];
+  const plans = project.floorPlans?.length ? project.floorPlans : ['1 BHK Layout', '2 BHK Layout', 'Master Plan'].map((label) => ({ label }));
   const sections = [['overview', 'Overview'], ['project-details', 'Project details'], ['amenities', 'Amenities'], ['gallery', 'Gallery'], ['floor-plans', 'Floor plans'], ['location', 'Location']];
   const amenityIcons = { 'Covered Car Parking': Car, '100% Vaastu': Compass, 'Rainwater Harvesting': Drop, 'Automatic Elevator': Elevator, 'CCTV Surveillance Camera': SecurityCamera, 'Architect Designed': PencilRuler, '24/7 Water Supply': Waves, 'Three-Phase EB': Lightning };
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   const pageRef = useRef(null);
+
+  useEffect(() => {
+    ScrollTrigger.refresh();
+  }, [galleryExpanded]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 24);
@@ -825,7 +818,8 @@ function OngoingProjectPage({ project }) {
     ['Building type', project.details[0]],
     ['Unit type', project.details[1]],
     ['Unit size', project.details[2]],
-    ['Bank loan', project.details[3]],
+    ['Bank loan', project.details[3]?.replace(/^Bank loan: /, '') || 'Pending confirmation'],
+    ...(project.totalHomes ? [['Total homes', project.totalHomes]] : []),
     ['Status', 'Ongoing'],
   ];
 
@@ -853,7 +847,7 @@ function OngoingProjectPage({ project }) {
         <section className="project-detail-hero" aria-labelledby="project-detail-title">
           <div className="project-detail-hero-image" aria-label={`${project.name} image`}>
             {project.image ? (
-              <img src={project.image} alt={project.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src={project.image} alt={`${project.name} building elevation`} style={{ width: '100%', height: '100%', objectFit: project.imageFit || 'cover', ...(project.imageFit === 'contain' ? { position: 'absolute', inset: 0 } : {}) }} />
             ) : (
               <Buildings size={64} weight="thin" aria-hidden="true" />
             )}
@@ -875,6 +869,7 @@ function OngoingProjectPage({ project }) {
           <div className="project-about-copy">
             <h2 data-project-overview-reveal>{project.name}</h2>
             <p data-project-overview-reveal>{project.intro || 'A short introduction to this project will be added when approved project information is available.'}</p>
+            {project.description && <p data-project-overview-reveal>{project.description}</p>}
           </div>
         </section>
 
@@ -914,15 +909,25 @@ function OngoingProjectPage({ project }) {
             <span className="eyebrow">Project gallery</span>
             <h2>A closer look.</h2>
           </div>
-          <div className="project-gallery-grid">
-            {[0, 1, 2].map((item) => (
+          <div id="project-gallery-photos" className={`project-gallery-grid${project.gallery?.length ? ' project-gallery-grid-photos' : ''}${!galleryExpanded ? ' is-collapsed' : ''}`}>
+            {project.gallery?.length ? project.gallery.map((photo, index) => (
+              <div className={`project-gallery-photo${photo.portrait ? ' is-portrait' : ''}`} key={photo.image} hidden={index >= 4 && !galleryExpanded} data-project-detail-reveal={index < 4 ? index : undefined}>
+                <img src={sitePath(photo.image)} alt={photo.alt} loading="lazy" decoding="async" />
+              </div>
+            )) : [0, 1, 2].map((item) => (
               <div className={`project-gallery-placeholder project-gallery-placeholder-${item + 1}`} key={item} data-project-detail-reveal={item}>
                 <Buildings size={36} weight="thin" aria-hidden="true" />
                 <span>Project photography pending</span>
               </div>
             ))}
           </div>
-          <span className="project-placeholder-note">Construction updates available on request.</span>
+          {project.gallery?.length > 4 && (
+            <button className="project-gallery-toggle" type="button" aria-expanded={galleryExpanded} aria-controls="project-gallery-photos" onClick={() => setGalleryExpanded((expanded) => !expanded)}>
+              <span aria-hidden="true">{galleryExpanded ? '−' : '+'}</span>
+              {galleryExpanded ? 'Show fewer photos' : 'More photos'}
+            </button>
+          )}
+          <span className="project-placeholder-note">{project.gallery?.length ? `Construction photographs from the ${project.name} site.` : 'Construction updates available on request.'}</span>
         </section>
 
         <section className="project-floorplans section-shell" id="floor-plans">
@@ -932,12 +937,18 @@ function OngoingProjectPage({ project }) {
           </div>
           <div className="project-plan-tabs" ref={planTabsRef} role="tablist" aria-label="Floor plan configurations" onKeyDown={handlePlanKeyDown}>
             {plans.map((plan, index) => (
-              <button className={activePlan === index ? 'is-active' : ''} id={`plan-tab-${index}`} type="button" role="tab" tabIndex={activePlan === index ? 0 : -1} aria-selected={activePlan === index} aria-controls="plan-panel" key={plan} onClick={() => setActivePlan(index)}>{plan}</button>
+              <button className={activePlan === index ? 'is-active' : ''} id={`plan-tab-${index}`} type="button" role="tab" tabIndex={activePlan === index ? 0 : -1} aria-selected={activePlan === index} aria-controls="plan-panel" key={plan.label} onClick={() => setActivePlan(index)}>{plan.label}</button>
             ))}
           </div>
-          <div className="project-plan-placeholder" id="plan-panel" role="tabpanel" tabIndex={0} aria-labelledby={`plan-tab-${activePlan}`}>
-            <Buildings size={42} weight="thin" aria-hidden="true" />
-            <span>{plans[activePlan]}: approved drawing pending.</span>
+          <div className={plans[activePlan].image ? 'project-plan-drawing' : 'project-plan-placeholder'} id="plan-panel" role="tabpanel" tabIndex={0} aria-labelledby={`plan-tab-${activePlan}`}>
+            {plans[activePlan].image ? (
+              <>
+                <img src={sitePath(plans[activePlan].image)} alt={plans[activePlan].alt} />
+                <a className="text-link" href={sitePath(plans[activePlan].image)} target="_blank" rel="noreferrer" aria-label={`View full ${plans[activePlan].label.toLowerCase()} drawing (opens in a new tab)`}>View full drawing <ArrowUpRight size={16} aria-hidden="true" /></a>
+              </>
+            ) : (
+              <><Buildings size={42} weight="thin" aria-hidden="true" /><span>{plans[activePlan].label}: approved drawing pending.</span></>
+            )}
           </div>
         </section>
 
@@ -947,14 +958,14 @@ function OngoingProjectPage({ project }) {
             <h3>Project address</h3>
             <p>{project.location}<br />{project.fullAddress || 'Project address pending confirmation.'}</p>
             <h3>Nearby landmarks</h3>
-            <ul>
-              <li>Thirumangalam Metro Station (2 mins)</li>
-              <li>Anna Nagar West Depot & Villivakkam Station</li>
-              <li>VR Chennai Mall, schools, and hospitals</li>
-            </ul>
+            {project.landmarks?.length ? <ul>{project.landmarks.map((landmark) => <li key={landmark}>{landmark}</li>)}</ul> : <p>Nearby landmarks pending confirmation.</p>}
             <a className="text-link" href={sitePath('/projects')}>Explore all projects <ArrowUpRight size={16} aria-hidden="true" /></a>
           </div>
-          <div className="project-map-placeholder"><MapPin size={34} weight="thin" aria-hidden="true" /><span>{project.fullAddress || 'Project address pending confirmation.'}</span><span>Project map pending</span></div>
+          {project.mapEmbedUrl ? (
+            <iframe className="project-map" src={project.mapEmbedUrl} title={`${project.name} location on Google Maps`} width="600" height="450" allowFullScreen loading="lazy" referrerPolicy="strict-origin-when-cross-origin" />
+          ) : (
+            <div className="project-map-placeholder"><MapPin size={34} weight="thin" aria-hidden="true" /><span>{project.fullAddress || 'Project address pending confirmation.'}</span><span>Project map pending</span></div>
+          )}
         </section>
 
         <section className="project-all-projects" data-project-detail-reveal>
@@ -1147,9 +1158,9 @@ function ProjectsPage() {
             <div className="ongoing-project-grid" key="ongoing">
               {ongoingProjects.map((project, index) => (
                 <a className="ongoing-project-card" href={sitePath(`/projects/${project.slug}`)} aria-label={`View details for ${project.name}, ${project.location}`} key={`${project.name}-${index}`} data-projects-reveal>
-                  <div className="project-placeholder ongoing-project-image" data-projects-image aria-label={`${project.name} image`}>
+                  <div className="project-placeholder ongoing-project-image" data-projects-image aria-label={`${project.name} image`} style={project.imageFit ? { position: 'relative' } : undefined}>
                     {project.image ? (
-                      <img src={project.image} alt={`${project.name} building elevation`} loading="lazy" />
+                      <img src={project.image} alt={`${project.name} building elevation`} loading="lazy" style={project.imageFit ? { position: 'absolute', inset: 0, objectFit: project.imageFit, objectPosition: 'center', transform: 'none' } : undefined} />
                     ) : (
                       <Buildings size={46} weight="thin" aria-hidden="true" />
                     )}
@@ -1331,7 +1342,7 @@ function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [formState, setFormState] = useState('idle');
-  const [formValues, setFormValues] = useState({ name: '', phone: '', email: '', message: '' });
+  const [formValues, setFormValues] = useState({ name: '', phone: '', email: '', location: '', message: '' });
 
   const heroProgressRef = useRef(null);
   const heroProgressAnimation = useRef(null);
@@ -1478,10 +1489,11 @@ function HomePage() {
   const closeMenu = () => setMenuOpen(false);
   const handleFormChange = (event) => {
     setFormValues((current) => ({ ...current, [event.target.name]: event.target.value }));
+    setFormState('idle');
   };
   const handleSubmit = (event) => {
     event.preventDefault();
-    setFormState('submitted');
+    if (validateEnquiryContact(event.currentTarget)) setFormState('submitted');
   };
 
   const handleJvMouseMove = (event) => {
@@ -1684,51 +1696,15 @@ function HomePage() {
                 <span className="eyebrow">Your enquiry</span>
                 <h2>How can we help?</h2>
               </div>
-              <span className="form-req-pill">All fields required</span>
+              <span className="form-req-pill">Name and phone required</span>
             </div>
-            <div className="form-row">
-              <label className="animated-input-group">
-                <span>Name</span>
-                <input
-                  name="name"
-                  autoComplete="name"
-                  value={formValues.name}
-                  onChange={handleFormChange}
-                  placeholder="Your full name"
-                  required
-                />
-              </label>
-              <label className="animated-input-group">
-                <span>Phone number</span>
-                <input
-                  name="phone"
-                  type="tel"
-                  autoComplete="tel"
-                  value={formValues.phone}
-                  onChange={handleFormChange}
-                  placeholder="Your phone number"
-                  required
-                />
-              </label>
-            </div>
-            <label className="animated-input-group">
-              <span>Email address</span>
-              <input
-                name="email"
-                type="email"
-                autoComplete="email"
-                value={formValues.email}
-                onChange={handleFormChange}
-                placeholder="you@example.com"
-                required
-              />
-            </label>
+            <EnquiryContactFields values={formValues} onChange={handleFormChange} />
             <fieldset className="contact-enquiry-types">
               <legend>What would you like to discuss?</legend>
               <div className="enquiry-chips-row">
                 {['General Inquiry', 'Building Contract', 'Joint Venture'].map((type) => (
                   <label className="enquiry-chip-label" key={type}>
-                    <input type="checkbox" name="enquiryType" value={type} />
+                    <input type="checkbox" name="enquiryType" value={type} defaultChecked={type === 'General Inquiry'} />
                     <span className="chip-indicator" aria-hidden="true"><Check size={13} weight="bold" /></span>
                     <span className="chip-text">{type}</span>
                   </label>
@@ -1736,22 +1712,21 @@ function HomePage() {
               </div>
             </fieldset>
             <label className="animated-input-group">
-              <span>Message</span>
+              <span>Message (optional)</span>
               <textarea
                 name="message"
                 rows="5"
                 value={formValues.message}
                 onChange={handleFormChange}
                 placeholder="Share a few details about your enquiry"
-                required
               />
             </label>
             <button className="button button-green magnetic-button" type="submit">
-              Send enquiry <ArrowUpRight size={16} aria-hidden="true" />
+              Prepare enquiry <ArrowUpRight size={16} aria-hidden="true" />
             </button>
             <p className={`form-note${formState === 'submitted' ? ' is-visible' : ''}`} role="status">
               {formState === 'submitted'
-                ? 'Thanks for reaching out. Form submission will be enabled once the enquiry service is connected.'
+                ? 'Your enquiry is prepared. Online sending is not connected yet; your details remain in the form.'
                 : 'This form is a preview and does not send messages yet.'}
             </p>
           </form>
