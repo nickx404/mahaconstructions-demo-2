@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Deploy preview to GitHub Pages
 
 on:
   push:
@@ -24,16 +24,13 @@ jobs:
           node-version: 22
           cache: npm
       - uses: actions/configure-pages@v5
+        id: pages
       - run: npm ci
+      - run: npx playwright install --with-deps chromium
       - run: npm run build
         env:
+          SITE_BASE_PATH: ${{ steps.pages.outputs.base_path }}/
           VITE_CHATBOT_LEAD_URL: ${{ vars.VITE_CHATBOT_LEAD_URL }}
-      - name: Prepare client side routes
-        run: |
-          for route in about about-2 about-us contact gallery joint-venture projects projects/ongoing-project-1 projects/ongoing-project-2 projects/ongoing-project-3 projects/maha-kuber-thirumangalam projects/mahaa-achyuda-periyar-nagar; do
-            mkdir -p "dist/$route"
-            cp dist/index.html "dist/$route/index.html"
-          done
       - uses: actions/upload-pages-artifact@v4
         with:
           path: dist

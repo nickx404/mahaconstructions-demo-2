@@ -113,12 +113,9 @@ export default function GalleryPage() {
   // Header scroll detection
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 24);
-    const previousTitle = document.title;
     window.addEventListener('scroll', handleScroll, { passive: true });
-    document.title = 'Gallery | Maha Constructions';
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      document.title = previousTitle;
     };
   }, []);
 
@@ -280,7 +277,7 @@ export default function GalleryPage() {
 
       <header className={`site-header projects-header${scrolled ? ' is-scrolled' : ''}${menuOpen ? ' menu-open' : ''}`}>
         <a className="wordmark" href={sitePath('/')} aria-label="Maha Constructions home">
-          <img src={sitePath('/images/maha-constructions-logo.png')} alt="Maha Constructions" />
+          <img src={sitePath('/images/maha-constructions-logo.webp')} alt="Maha Constructions" />
         </a>
         <button 
           className="menu-toggle" 
@@ -392,7 +389,6 @@ export default function GalleryPage() {
                 key={item.id}
                 type="button"
                 className={`gallery-card gallery-card-item${isVideo ? ' is-video-card' : ''}`}
-                aria-label={`View ${isVideo ? 'video' : 'photo'} ${item.title}`}
                 onClick={() => {
                   setSelectedItemIndex(index);
                   setZoomLevel(1);
@@ -470,7 +466,7 @@ export default function GalleryPage() {
                       <div className="info-top-row">
                         <span className="item-order-tag">0{index + 1}</span>
                       </div>
-                      <h3 className="gallery-card-title">{item.title}</h3>
+                      <h2 className="gallery-card-title">{item.title}</h2>
                       {item.subtitle && <p className="card-subtitle-line">{item.subtitle}</p>}
                     </>
                   )}

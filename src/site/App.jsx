@@ -1,5 +1,6 @@
-import EnquiryContactFields, { validateEnquiryContact } from './EnquiryContactFields.jsx';
-import { useEffect, useRef, useState } from 'react';
+import useEnquirySubmission from './useEnquirySubmission.js';
+import EnquiryContactFields from './EnquiryContactFields.jsx';
+import { lazy, useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import {
@@ -40,27 +41,39 @@ import {
   WhatsappLogo,
   X,
 } from '@phosphor-icons/react';
-import AboutPage from './AboutPage.jsx';
-import ContactPage from './ContactPage.jsx';
 import Footer from './Footer.jsx';
 import RollingNumber from './RollingNumber.jsx';
-import GalleryPage from './GalleryPage.jsx';
+import NotFoundPage from './NotFoundPage.jsx';
 import { sitePath, siteRoute } from './paths.js';
 import { services as serviceContent, ongoingProjects as ongoingContent, completedProjects as completedContent } from './siteContent.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
+const AboutPage = lazy(() => import('./AboutPage.jsx'));
+const ContactPage = lazy(() => import('./ContactPage.jsx'));
+const GalleryPage = lazy(() => import('./GalleryPage.jsx'));
+
 const heroSlides = [
   {
-    desktop: sitePath('/images/hero-maha-kuber-desktop-v4.jpg'),
-    mobile: sitePath('/images/hero-maha-kuber-mobile.jpg'),
-    mobileHref: sitePath('/projects/maha-kuber-thirumangalam'),
+    id: 'kuber',
+    desktop: sitePath('/images/hero-maha-kuber-desktop-v4.webp'),
+    mobile: sitePath('/images/hero-maha-kuber-mobile.webp'),
+    href: sitePath('/projects/maha-kuber-thirumangalam'),
     alt: 'Maha Kuber by Maha Constructions. Luxury homes in the heart of Thirumangalam. Just 2 mins from Anna Nagar West. Exclusive 1 & 2 BHK Homes. 100% Vaastu, covered parking and automatic lift. CMDA approved. QR code opens the location in Google Maps.',
-    mobileLinkLabel: 'Explore Maha Kuber: luxury homes in the heart of Thirumangalam, Chennai. 1 & 2 BHK homes. View project details.',
+    linkLabel: 'Explore Maha Kuber: luxury homes in the heart of Thirumangalam, Chennai. 1 & 2 BHK homes. View project details.',
   },
   {
-    desktop: sitePath('/images/hero-joint-venture-banner.jpg'),
-    mobile: sitePath('/images/hero-joint-venture-banner-mobile.jpg'),
+    id: 'achyuda',
+    desktop: sitePath('/images/hero-mahaa-achyuda-desktop-v2.webp'),
+    mobile: sitePath('/images/hero-mahaa-achyuda-mobile-v1.webp'),
+    href: sitePath('/projects/mahaa-achyuda-periyar-nagar'),
+    alt: 'Mahaa Achyuda by Maha Constructions. Homes in Periyar Nagar. 2 & 3 BHK homes, 878–1,198 sq.ft. Covered parking, automatic lift and 100% Vaastu.',
+    linkLabel: 'Explore Mahaa Achyuda in Periyar Nagar, Chennai. 2 & 3 BHK homes. View project details.',
+  },
+  {
+    id: 'joint-venture',
+    desktop: sitePath('/images/hero-joint-venture-banner.webp'),
+    mobile: sitePath('/images/hero-joint-venture-banner-mobile.webp'),
     alt: 'Open to Joint Ventures with Maha Constructions',
   },
 ];
@@ -91,7 +104,7 @@ const projects = [
   },
 ];
 
-const ongoingProjects = ongoingContent.map((project) => ({ ...project, image: sitePath(project.image) }));
+const ongoingProjects = ongoingContent.map((project) => ({ ...project, image: sitePath(project.image), ...(project.heroImage ? { heroImage: sitePath(project.heroImage) } : {}), ...(project.heroMobileImage ? { heroMobileImage: sitePath(project.heroMobileImage) } : {}) }));
 const completedProjects = completedContent.map((project) => ({ ...project, image: sitePath(project.image) }));
 
 const googleReviews = [
@@ -197,7 +210,7 @@ function GoogleReviewsSection({ id = 'reviews', title = 'What our customers say.
         <h2 id={`${id}-title`}>{title}</h2>
 
         <div className="jv-review-card-container">
-          <div className="jv-review-stars" aria-label={`${current.rating} out of 5 stars`}>
+          <div className="jv-review-stars" role="img" aria-label={`${current.rating} out of 5 stars`}>
             {Array.from({ length: current.rating }).map((_, i) => (
               <Star key={i} size={18} weight="fill" className="star-icon" aria-hidden="true" />
             ))}
@@ -352,13 +365,14 @@ function App() {
   const ongoingProject = ongoingProjects.find((project) => `/projects/${project.slug}` === path);
   if (ongoingProject) return <OngoingProjectPage project={ongoingProject} />;
   if (path === '/projects') return <ProjectsPage />;
-  return <HomePage />;
+  if (path === '/') return <HomePage />;
+  return <NotFoundPage />;
 }
 
 function JointVenturePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [formSubmitted, setFormSubmitted] = useState(false);
+  const enquiry = useEnquirySubmission('joint-venture');
   const videoRef = useRef(null);
   const pageRef = useRef(null);
   const [videoReady, setVideoReady] = useState(false);
@@ -393,11 +407,8 @@ function JointVenturePage() {
     const handleScroll = () => setScrolled(window.scrollY > 24);
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
-    const previousTitle = document.title;
-    document.title = 'Joint Venture | Maha Constructions';
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      document.title = previousTitle;
     };
   }, []);
 
@@ -461,7 +472,7 @@ function JointVenturePage() {
     <div className="joint-venture-page" ref={pageRef}>
       <header className={`site-header jv-header${scrolled ? ' is-scrolled' : ''}${menuOpen ? ' menu-open' : ''}`}>
         <a className="wordmark" href={sitePath('/')} aria-label="Maha Constructions home" onClick={closeMenu}>
-          <img src={sitePath('/images/maha-constructions-logo.png')} alt="Maha Constructions" />
+          <img src={sitePath('/images/maha-constructions-logo.webp')} alt="Maha Constructions" />
         </a>
         <button className="menu-toggle" type="button" aria-label={menuOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>
           {menuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
@@ -665,37 +676,37 @@ function JointVenturePage() {
 
         <section className="jv-enquiry-section" id="jv-enquiry" aria-labelledby="jv-enquiry-title">
           <div className="jv-enquiry-intro" data-jv-reveal><span className="eyebrow">Landowner enquiry</span><h2 id="jv-enquiry-title">Have land you want to develop?</h2><p>Tell us about your property. Let’s explore the opportunity together.</p><a href="mailto:saimaha1000@gmail.com">saimaha1000@gmail.com <ArrowUpRight size={15} aria-hidden="true" /></a></div>
-          <form className="contact-page-form site-enquiry-form" onSubmit={(event) => { event.preventDefault(); if (validateEnquiryContact(event.currentTarget)) setFormSubmitted(true); }}>
-            <div className="contact-page-form-heading">
-              <div>
-                <span className="eyebrow">Your enquiry</span>
-                <h2>How can we help?</h2>
+          <form className="contact-page-form site-enquiry-form" onSubmit={enquiry.submit} onChange={enquiry.reset} aria-busy={enquiry.saving}>
+            <fieldset className="enquiry-fields" disabled={enquiry.saving}>
+              <div className="contact-page-form-heading">
+                <div>
+                  <span className="eyebrow">Your enquiry</span>
+                  <h2>How can we help?</h2>
+                </div>
+                <span className="form-req-pill">Name and phone required</span>
               </div>
-              <span className="form-req-pill">Name and phone required</span>
-            </div>
-            <EnquiryContactFields landowner onChange={() => setFormSubmitted(false)} />
-            <fieldset className="contact-enquiry-types">
-              <legend>What would you like to discuss?</legend>
-              <div className="enquiry-chips-row">
-                {['General Inquiry', 'Building Contract', 'Joint Venture'].map((type) => (
-                  <label className="enquiry-chip-label" key={type}>
-                    <input type="checkbox" name="enquiryType" value={type} defaultChecked={type === 'Joint Venture'} />
-                    <span className="chip-indicator" aria-hidden="true"><Check size={13} weight="bold" /></span>
-                    <span className="chip-text">{type}</span>
-                  </label>
-                ))}
-              </div>
+              <EnquiryContactFields landowner />
+              <fieldset className="contact-enquiry-types">
+                <legend>What would you like to discuss?</legend>
+                <div className="enquiry-chips-row">
+                  {['General Inquiry', 'Building Contract', 'Joint Venture'].map((type) => (
+                    <label className="enquiry-chip-label" key={type}>
+                      <input type="checkbox" name="enquiryType" value={type} defaultChecked={type === 'Joint Venture'} />
+                      <span className="chip-indicator" aria-hidden="true"><Check size={13} weight="bold" /></span>
+                      <span className="chip-text">{type}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+              <label className="animated-input-group">
+                <span>Message (optional)</span>
+                <textarea name="message" maxLength={2000} rows="5" placeholder="Share a few details about your property or enquiry" />
+              </label>
+              <button className="button button-green magnetic-button" type="submit" disabled={enquiry.saving || enquiry.saved}>
+                {enquiry.buttonLabel} <ArrowUpRight size={16} aria-hidden="true" />
+              </button>
+              <p className="contact-page-form-note form-note is-visible" role="status">{enquiry.message}</p>
             </fieldset>
-            <label className="animated-input-group">
-              <span>Message (optional)</span>
-              <textarea name="message" rows="5" placeholder="Share a few details about your property or enquiry" />
-            </label>
-            <button className="button button-green magnetic-button" type="submit">
-              Prepare enquiry <ArrowUpRight size={16} aria-hidden="true" />
-            </button>
-            <p className={`contact-page-form-note form-note${formSubmitted ? ' is-visible' : ''}`} aria-live="polite">
-              {formSubmitted ? 'Your enquiry is prepared. Online sending is not connected yet; your details remain in the form.' : 'This form is a preview and does not send messages yet.'}
-            </p>
           </form>
         </section>
 
@@ -745,11 +756,8 @@ function OngoingProjectPage({ project }) {
     const handleScroll = () => setScrolled(window.scrollY > 24);
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
-    const previousTitle = document.title;
-    document.title = `${project.name} | Maha Constructions`;
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      document.title = previousTitle;
     };
   }, [project.name]);
 
@@ -819,15 +827,14 @@ function OngoingProjectPage({ project }) {
     ['Unit type', project.details[1]],
     ['Unit size', project.details[2]],
     ['Bank loan', project.details[3]?.replace(/^Bank loan: /, '') || 'Pending confirmation'],
-    ...(project.totalHomes ? [['Total homes', project.totalHomes]] : []),
-    ['Status', 'Ongoing'],
+    project.totalHomes ? ['Total homes', project.totalHomes] : ['Status', 'Ongoing'],
   ];
 
   return (
     <div className="projects-page project-detail-page" ref={pageRef}>
       <header className={`site-header projects-header${scrolled ? ' is-scrolled' : ''}${menuOpen ? ' menu-open' : ''}`}>
         <a className="wordmark" href={sitePath('/')} aria-label="Maha Constructions home" onClick={closeMenu}>
-          <img src={sitePath('/images/maha-constructions-logo.png')} alt="Maha Constructions" />
+          <img src={sitePath('/images/maha-constructions-logo.webp')} alt="Maha Constructions" />
         </a>
         <button className="menu-toggle" type="button" aria-label={menuOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>
           {menuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
@@ -845,9 +852,12 @@ function OngoingProjectPage({ project }) {
 
       <main className="project-detail-main">
         <section className="project-detail-hero" aria-labelledby="project-detail-title">
-          <div className="project-detail-hero-image" aria-label={`${project.name} image`}>
+          <div className={`project-detail-hero-image${project.heroMobileImage ? ' has-mobile-elevation' : ''}`} aria-label={`${project.name} image`}>
             {project.image ? (
-              <img src={project.image} alt={`${project.name} building elevation`} style={{ width: '100%', height: '100%', objectFit: project.imageFit || 'cover', ...(project.imageFit === 'contain' ? { position: 'absolute', inset: 0 } : {}) }} />
+              <picture style={{ display: 'contents' }}>
+                {project.heroMobileImage && <source media="(max-width: 700px)" srcSet={project.heroMobileImage} />}
+                <img src={project.heroImage || project.image} alt={`${project.name} building elevation`} fetchPriority="high" style={{ width: '100%', height: '100%', objectFit: `var(--project-hero-fit, ${project.imageFit || 'cover'})`, ...(project.heroImage || project.imageFit === 'contain' ? { position: 'absolute', inset: 0 } : {}) }} />
+              </picture>
             ) : (
               <Buildings size={64} weight="thin" aria-hidden="true" />
             )}
@@ -943,8 +953,8 @@ function OngoingProjectPage({ project }) {
           <div className={plans[activePlan].image ? 'project-plan-drawing' : 'project-plan-placeholder'} id="plan-panel" role="tabpanel" tabIndex={0} aria-labelledby={`plan-tab-${activePlan}`}>
             {plans[activePlan].image ? (
               <>
-                <img src={sitePath(plans[activePlan].image)} alt={plans[activePlan].alt} />
-                <a className="text-link" href={sitePath(plans[activePlan].image)} target="_blank" rel="noreferrer" aria-label={`View full ${plans[activePlan].label.toLowerCase()} drawing (opens in a new tab)`}>View full drawing <ArrowUpRight size={16} aria-hidden="true" /></a>
+                <img src={sitePath(plans[activePlan].image)} alt={plans[activePlan].alt} loading="lazy" decoding="async" />
+                <a className="text-link" href={sitePath(plans[activePlan].image)} target="_blank" rel="noreferrer" aria-label={`View full drawing: ${plans[activePlan].label.toLowerCase()} (opens in a new tab)`}>View full drawing <ArrowUpRight size={16} aria-hidden="true" /></a>
               </>
             ) : (
               <><Buildings size={42} weight="thin" aria-hidden="true" /><span>{plans[activePlan].label}: approved drawing pending.</span></>
@@ -957,6 +967,7 @@ function OngoingProjectPage({ project }) {
             <div className="project-detail-section-title"><span className="eyebrow">Location</span><h2>Close to what matters.</h2></div>
             <h3>Project address</h3>
             <p>{project.location}<br />{project.fullAddress || 'Project address pending confirmation.'}</p>
+            {project.mapUrl && <p><a className="text-link" href={project.mapUrl} target="_blank" rel="noreferrer" aria-label={`Open ${project.name} in Google Maps (opens in a new tab)`}>Open in Google Maps <ArrowUpRight size={16} aria-hidden="true" /></a></p>}
             <h3>Nearby landmarks</h3>
             {project.landmarks?.length ? <ul>{project.landmarks.map((landmark) => <li key={landmark}>{landmark}</li>)}</ul> : <p>Nearby landmarks pending confirmation.</p>}
             <a className="text-link" href={sitePath('/projects')}>Explore all projects <ArrowUpRight size={16} aria-hidden="true" /></a>
@@ -1023,11 +1034,8 @@ function ProjectsPage() {
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
 
-    const previousTitle = document.title;
-    document.title = 'Projects | Maha Constructions';
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      document.title = previousTitle;
     };
   }, []);
 
@@ -1096,7 +1104,7 @@ function ProjectsPage() {
     <div className="projects-page" ref={pageRef}>
       <header className={`site-header projects-header${scrolled ? ' is-scrolled' : ''}${menuOpen ? ' menu-open' : ''}`}>
         <a className="wordmark" href={sitePath('/')} aria-label="Maha Constructions home" onClick={closeMenu}>
-          <img src={sitePath('/images/maha-constructions-logo.png')} alt="Maha Constructions" />
+          <img src={sitePath('/images/maha-constructions-logo.webp')} alt="Maha Constructions" />
         </a>
         <button
           className="menu-toggle"
@@ -1126,8 +1134,8 @@ function ProjectsPage() {
             <span className="eyebrow">Projects</span>
             <h1 id="projects-page-title">The things we <br className="hero-mobile-br" />have made.</h1>
             <p>
-              A clean project archive for Maha Constructions, ready for approved photography,
-              final names and detailed ongoing-project pages.
+              Explore our residential projects in Chennai, from current developments
+              to the places we have completed.
             </p>
           </div>
         </section>
@@ -1157,8 +1165,8 @@ function ProjectsPage() {
           {projectStatus === 'ongoing' ? (
             <div className="ongoing-project-grid" key="ongoing">
               {ongoingProjects.map((project, index) => (
-                <a className="ongoing-project-card" href={sitePath(`/projects/${project.slug}`)} aria-label={`View details for ${project.name}, ${project.location}`} key={`${project.name}-${index}`} data-projects-reveal>
-                  <div className="project-placeholder ongoing-project-image" data-projects-image aria-label={`${project.name} image`} style={project.imageFit ? { position: 'relative' } : undefined}>
+                <a className="ongoing-project-card" href={sitePath(`/projects/${project.slug}`)} key={`${project.name}-${index}`} data-projects-reveal>
+                  <div className="project-placeholder ongoing-project-image" data-projects-image style={project.imageFit ? { position: 'relative' } : undefined}>
                     {project.image ? (
                       <img src={project.image} alt={`${project.name} building elevation`} loading="lazy" style={project.imageFit ? { position: 'absolute', inset: 0, objectFit: project.imageFit, objectPosition: 'center', transform: 'none' } : undefined} />
                     ) : (
@@ -1341,7 +1349,7 @@ function HomePage() {
   const [activeService, setActiveService] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [formState, setFormState] = useState('idle');
+  const enquiry = useEnquirySubmission('home');
   const [formValues, setFormValues] = useState({ name: '', phone: '', email: '', location: '', message: '' });
 
   const heroProgressRef = useRef(null);
@@ -1489,11 +1497,6 @@ function HomePage() {
   const closeMenu = () => setMenuOpen(false);
   const handleFormChange = (event) => {
     setFormValues((current) => ({ ...current, [event.target.name]: event.target.value }));
-    setFormState('idle');
-  };
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (validateEnquiryContact(event.currentTarget)) setFormState('submitted');
   };
 
   const handleJvMouseMove = (event) => {
@@ -1505,9 +1508,9 @@ function HomePage() {
 
   return (
     <div className="home-page" ref={homeRef}>
-      <header inert={!scrolled} aria-hidden={!scrolled} className={`site-header home-header${activeSlide === 1 ? ' is-jv' : ''}${scrolled ? ' is-scrolled' : ''}${menuOpen ? ' menu-open' : ''}`}>
+      <header inert={!scrolled} aria-hidden={!scrolled} className={`site-header home-header${heroSlides[activeSlide].id === 'joint-venture' ? ' is-jv' : ''}${scrolled ? ' is-scrolled' : ''}${menuOpen ? ' menu-open' : ''}`}>
         <a className="wordmark" href="#home" aria-label="Maha Constructions home" onClick={closeMenu}>
-          <img src={sitePath('/images/maha-constructions-logo.png')} alt="" />
+          <img src={sitePath('/images/maha-constructions-logo.webp')} alt="" />
         </a>
         <button
           className="menu-toggle"
@@ -1533,7 +1536,7 @@ function HomePage() {
 
       <main id="home">
         <section
-          className={`hero${activeSlide === 1 ? ' is-jv' : ''}`}
+          className={`hero${heroSlides[activeSlide].id === 'joint-venture' ? ' is-jv' : ''}`}
           aria-label="Featured Maha Constructions developments"
           onFocusCapture={() => setHeroPaused(true)}
           onBlurCapture={(event) => {
@@ -1541,12 +1544,12 @@ function HomePage() {
           }}
         >
           {heroSlides.map((slide, index) => (
-            <div className={`hero-slide${index === 1 ? ' hero-slide-jv' : ''}${activeSlide === index ? ' is-active' : ''}`} key={slide.desktop} aria-hidden={activeSlide !== index} inert={activeSlide !== index}>
+            <div className={`hero-slide${slide.id === 'joint-venture' ? ' hero-slide-jv' : ''}${activeSlide === index ? ' is-active' : ''}`} key={slide.id} aria-hidden={activeSlide !== index} inert={activeSlide !== index}>
               <picture className="hero-picture">
-                {slide.mobile && <source media="(max-width: 700px)" srcSet={slide.mobile} />}
-                <img src={slide.desktop} alt={slide.alt} fetchPriority={index === 0 ? 'high' : 'auto'} />
+                {slide.mobile && <source media="(max-width: 700px)" srcSet={`${slide.mobile.replace('.webp', '-800.webp')} 800w, ${slide.mobile} 1080w`} sizes="100vw" />}
+                <img src={slide.desktop} alt={slide.alt} width={index === 0 ? 1672 : 1920} height={index === 0 ? 941 : 1080} loading={index === 0 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : 'low'} />
               </picture>
-              {slide.mobileHref && <a className="hero-mobile-link" href={slide.mobileHref} aria-label={slide.mobileLinkLabel} />}
+              {slide.href && <a className="hero-project-link" href={slide.href} aria-label={slide.linkLabel} />}
             </div>
           ))}
           <div className="hero-controls" aria-label="Hero image controls">
@@ -1573,6 +1576,7 @@ function HomePage() {
           <div className="about-copy" id="story">
             <span className="eyebrow" data-reveal>Since 1990 · Chennai</span>
             <h1 data-reveal>
+              <span className="sr-only">Maha Constructions, Chennai. </span>
               Three decades of building <span className="inline-image" aria-hidden="true" /> trust.
             </h1>
             <p className="body-copy">
@@ -1690,45 +1694,44 @@ function HomePage() {
               </a>
             </div>
           </div>
-          <form className="contact-page-form site-enquiry-form" id="enquiry" onSubmit={handleSubmit}>
-            <div className="contact-page-form-heading">
-              <div>
-                <span className="eyebrow">Your enquiry</span>
-                <h2>How can we help?</h2>
+          <form className="contact-page-form site-enquiry-form" id="enquiry" onSubmit={enquiry.submit} onChange={enquiry.reset} aria-busy={enquiry.saving}>
+            <fieldset className="enquiry-fields" disabled={enquiry.saving}>
+              <div className="contact-page-form-heading">
+                <div>
+                  <span className="eyebrow">Your enquiry</span>
+                  <h2>How can we help?</h2>
+                </div>
+                <span className="form-req-pill">Name and phone required</span>
               </div>
-              <span className="form-req-pill">Name and phone required</span>
-            </div>
-            <EnquiryContactFields values={formValues} onChange={handleFormChange} />
-            <fieldset className="contact-enquiry-types">
-              <legend>What would you like to discuss?</legend>
-              <div className="enquiry-chips-row">
-                {['General Inquiry', 'Building Contract', 'Joint Venture'].map((type) => (
-                  <label className="enquiry-chip-label" key={type}>
-                    <input type="checkbox" name="enquiryType" value={type} defaultChecked={type === 'General Inquiry'} />
-                    <span className="chip-indicator" aria-hidden="true"><Check size={13} weight="bold" /></span>
-                    <span className="chip-text">{type}</span>
-                  </label>
-                ))}
-              </div>
+              <EnquiryContactFields values={formValues} onChange={handleFormChange} />
+              <fieldset className="contact-enquiry-types">
+                <legend>What would you like to discuss?</legend>
+                <div className="enquiry-chips-row">
+                  {['General Inquiry', 'Building Contract', 'Joint Venture'].map((type) => (
+                    <label className="enquiry-chip-label" key={type}>
+                      <input type="checkbox" name="enquiryType" value={type} defaultChecked={type === 'General Inquiry'} />
+                      <span className="chip-indicator" aria-hidden="true"><Check size={13} weight="bold" /></span>
+                      <span className="chip-text">{type}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+              <label className="animated-input-group">
+                <span>Message (optional)</span>
+                <textarea
+                  name="message"
+                  maxLength={2000}
+                  rows="5"
+                  value={formValues.message}
+                  onChange={handleFormChange}
+                  placeholder="Share a few details about your enquiry"
+                />
+              </label>
+              <button className="button button-green magnetic-button" type="submit" disabled={enquiry.saving || enquiry.saved}>
+                {enquiry.buttonLabel} <ArrowUpRight size={16} aria-hidden="true" />
+              </button>
+              <p className="form-note is-visible" role="status">{enquiry.message}</p>
             </fieldset>
-            <label className="animated-input-group">
-              <span>Message (optional)</span>
-              <textarea
-                name="message"
-                rows="5"
-                value={formValues.message}
-                onChange={handleFormChange}
-                placeholder="Share a few details about your enquiry"
-              />
-            </label>
-            <button className="button button-green magnetic-button" type="submit">
-              Prepare enquiry <ArrowUpRight size={16} aria-hidden="true" />
-            </button>
-            <p className={`form-note${formState === 'submitted' ? ' is-visible' : ''}`} role="status">
-              {formState === 'submitted'
-                ? 'Your enquiry is prepared. Online sending is not connected yet; your details remain in the form.'
-                : 'This form is a preview and does not send messages yet.'}
-            </p>
           </form>
         </section>
       </main>

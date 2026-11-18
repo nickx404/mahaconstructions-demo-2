@@ -69,7 +69,7 @@ export default function Footer({ backToTopTarget = '#top', className = '' }) {
             aria-label="Maha Constructions home"
           >
             <img
-              src={sitePath('/images/maha-constructions-logo-white.png')}
+              src={sitePath('/images/maha-constructions-logo-white.webp')}
               alt="Maha Constructions"
               className="footer-logo-img"
             />

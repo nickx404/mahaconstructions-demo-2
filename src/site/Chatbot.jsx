@@ -319,7 +319,7 @@ export default function Chatbot() {
           {error && <p id="maha-chat-error" className="maha-chat-error" role="alert">{error} {step === 'review' && <a href={sitePath('/contact#contact-form')}>Open contact form</a>}</p>}
         </form>
       </section>}
-      <button className={`maha-chat-launcher${open ? ' is-open' : ''}`} type="button" ref={launcher} aria-label={open ? 'Minimize chatbot' : 'Open Maha Constructions chatbot'} aria-controls="maha-chat-panel" aria-expanded={open} onClick={() => { manualOpen.current = true; if (open) close(); else setOpen(true); }}>
+      <button className={`maha-chat-launcher${open ? ' is-open' : ''}`} type="button" ref={launcher} aria-label={open ? 'Minimize chatbot' : 'Ask Maha — open Maha Constructions chatbot'} aria-controls="maha-chat-panel" aria-expanded={open} onClick={() => { manualOpen.current = true; if (open) close(); else setOpen(true); }}>
         {open ? <X size={23} aria-hidden="true" /> : <><ChatCircleDots size={24} weight="fill" aria-hidden="true" /><span>Ask Maha</span></>}
       </button>
     </div>

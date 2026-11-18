@@ -5,8 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "node scripts/build.mjs",
+    "preview": "vite preview",
+    "build:production": "node scripts/build.mjs --production",
+    "test": "node --test src/site/*.test.js integrations/google-apps-script/Code.test.js",
+    "test:seo": "node --test src/site/seo.test.js",
+    "check:site": "node scripts/check-site.mjs",
+    "audit:mobile": "node scripts/audit-mobile.mjs"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
@@ -16,5 +21,10 @@
     "react": "latest",
     "react-dom": "latest",
     "vite": "latest"
+  },
+  "devDependencies": {
+    "chrome-launcher": "^1.2.3",
+    "lighthouse": "^13.6.0",
+    "playwright": "^1.65.1"
   }
 }

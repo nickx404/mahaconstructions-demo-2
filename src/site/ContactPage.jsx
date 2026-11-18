@@ -1,19 +1,18 @@
-import EnquiryContactFields, { validateEnquiryContact } from './EnquiryContactFields.jsx';
+import useEnquirySubmission from './useEnquirySubmission.js';
+import EnquiryContactFields from './EnquiryContactFields.jsx';
 import { useState, useEffect, useRef } from 'react';
-import { 
-  ArrowUpRight, 
-  Check, 
-  CheckCircle, 
-  Clock, 
-  Compass, 
-  Copy, 
-  EnvelopeSimple, 
-  List as Menu, 
-  MapPin, 
-  Phone, 
-  Sparkle, 
-  WhatsappLogo, 
-  X 
+import {
+  ArrowUpRight,
+  Check,
+  Clock,
+  Compass,
+  Copy,
+  EnvelopeSimple,
+  List as Menu,
+  MapPin,
+  Phone,
+  WhatsappLogo,
+  X
 } from '@phosphor-icons/react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -26,7 +25,7 @@ gsap.registerPlugin(ScrollTrigger);
 export default function ContactPage() {
   const [chatbotLead, setChatbotLead] = useState(readChatbotLead);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const enquiry = useEnquirySubmission('contact');
   const [copiedField, setCopiedField] = useState(null);
   const [chennaiTime, setChennaiTime] = useState('');
   const [selectedEnquiries, setSelectedEnquiries] = useState([chatbotLead?.intent === 'joint-venture' ? 'Joint Venture' : 'General Inquiry']);
@@ -40,7 +39,7 @@ export default function ContactPage() {
       setChatbotLead(lead);
       setFormValues((current) => ({ ...current, name: lead.name, phone: lead.phone, email: lead.email || current.email, location: lead.location || '', message: chatbotMessage(lead) }));
       setSelectedEnquiries([lead.intent === 'joint-venture' ? 'Joint Venture' : 'General Inquiry']);
-      setSubmitted(false);
+      enquiry.reset();
       clearChatbotLead();
     };
     window.addEventListener('maha-chatbot-enquiry', receiveChatbotLead);
@@ -88,7 +87,7 @@ export default function ContactPage() {
 
   // Toggle enquiry checkbox
   const handleEnquiryToggle = (type) => {
-    setSelectedEnquiries((prev) => 
+    setSelectedEnquiries((prev) =>
       prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
     );
   };
@@ -101,23 +100,23 @@ export default function ContactPage() {
       // 1. Hero Text Reveal & Motion Graphics Entrance
       const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
       heroTl
-        .fromTo('.contact-eyebrow-badge', 
-          { autoAlpha: 0, y: -16, scale: 0.94 }, 
+        .fromTo('.contact-eyebrow-badge',
+          { autoAlpha: 0, y: -16, scale: 0.94 },
           { autoAlpha: 1, y: 0, scale: 1, duration: 0.7, delay: 0.1 }
         )
-        .fromTo('.hero-split-line', 
-          { yPercent: 110, rotate: 1 }, 
-          { yPercent: 0, rotate: 0, duration: 1.05, stagger: 0.12, ease: 'power4.out' }, 
+        .fromTo('.hero-split-line',
+          { yPercent: 110, rotate: 1 },
+          { yPercent: 0, rotate: 0, duration: 1.05, stagger: 0.12, ease: 'power4.out' },
           '-=0.4'
         )
-        .fromTo('.contact-hero-desc', 
-          { autoAlpha: 0, y: 24 }, 
-          { autoAlpha: 1, y: 0, duration: 0.8 }, 
+        .fromTo('.contact-hero-desc',
+          { autoAlpha: 0, y: 24 },
+          { autoAlpha: 1, y: 0, duration: 0.8 },
           '-=0.6'
         )
-        .fromTo('.contact-time-pill', 
-          { autoAlpha: 0, scale: 0.88 }, 
-          { autoAlpha: 1, scale: 1, duration: 0.6, ease: 'back.out(1.7)' }, 
+        .fromTo('.contact-time-pill',
+          { autoAlpha: 0, scale: 0.88 },
+          { autoAlpha: 1, scale: 1, duration: 0.6, ease: 'back.out(1.7)' },
           '-=0.5'
         );
 
@@ -245,13 +244,13 @@ export default function ContactPage() {
 
       <header className={`site-header projects-header${menuOpen ? ' menu-open' : ''}`}>
         <a className="wordmark" href={sitePath('/')} aria-label="Maha Constructions home" onClick={closeMenu}>
-          <img src={sitePath('/images/maha-constructions-logo.png')} alt="Maha Constructions" />
+          <img src={sitePath('/images/maha-constructions-logo.webp')} alt="Maha Constructions" />
         </a>
-        <button 
-          className="menu-toggle" 
-          type="button" 
-          aria-label={menuOpen ? 'Close navigation' : 'Open navigation'} 
-          aria-expanded={menuOpen} 
+        <button
+          className="menu-toggle"
+          type="button"
+          aria-label={menuOpen ? 'Close navigation' : 'Open navigation'}
+          aria-expanded={menuOpen}
           onClick={() => setMenuOpen((open) => !open)}
         >
           {menuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
@@ -316,105 +315,75 @@ export default function ContactPage() {
         {/* Interactive Form & Contact Details Section */}
         <section className="contact-page-content section-shell" id="contact-form">
           {/* Animated Form Card */}
-          <form 
-            className="contact-page-form" 
-            onSubmit={(event) => { 
-              event.preventDefault(); 
-              if (validateEnquiryContact(event.currentTarget)) setSubmitted(true); 
-            }}
+          <form
+            className="contact-page-form"
+            onSubmit={enquiry.submit} onChange={enquiry.reset} aria-busy={enquiry.saving}
           >
-            {/* Top Light-Beam Animation */}
-            <div className="form-beam-glow" aria-hidden="true" />
+            <fieldset className="enquiry-fields" disabled={enquiry.saving}>
+              {/* Top Light-Beam Animation */}
+              <div className="form-beam-glow" aria-hidden="true" />
 
-            <div className="contact-page-form-heading">
-              <div>
-                <span className="eyebrow">Your enquiry</span>
-                <h2>How can we help?</h2>
+              <div className="contact-page-form-heading">
+                <div>
+                  <span className="eyebrow">Your enquiry</span>
+                  <h2>How can we help?</h2>
+                </div>
+                <span className="form-req-pill">Name and phone required</span>
               </div>
-              <span className="form-req-pill">Name and phone required</span>
-            </div>
 
-            {chatbotLead && <p className="chatbot-handoff-note">Your chatbot details are filled in below. Review them and add any further information to your enquiry.</p>}
+              {chatbotLead && <p className="chatbot-handoff-note">Your chatbot details are filled in below. Review them and add any further information to your enquiry.</p>}
 
-            <EnquiryContactFields values={formValues} landowner={selectedEnquiries.includes('Joint Venture')} onChange={(event) => { setSubmitted(false); setFormValues((current) => ({ ...current, [event.target.name]: event.target.value })); }} />
+              <EnquiryContactFields values={formValues} landowner={selectedEnquiries.includes('Joint Venture')} onChange={(event) => { setFormValues((current) => ({ ...current, [event.target.name]: event.target.value })); }} />
 
-            <fieldset className="contact-enquiry-types contact-form-field">
-              <legend>What would you like to discuss?</legend>
-              <div className="enquiry-chips-row">
-                {['General Inquiry', 'Building Contract', 'Joint Venture'].map((type) => {
-                  const isChecked = selectedEnquiries.includes(type);
-                  return (
-                    <label 
-                      key={type} 
-                      className={`enquiry-chip-label${isChecked ? ' is-selected' : ''}`}
-                    >
-                      <input 
-                        type="checkbox" 
-                        name="enquiryType" 
-                        value={type} 
-                        checked={isChecked}
-                        onChange={() => handleEnquiryToggle(type)}
-                      />
-                      <span className="chip-indicator">
-                        {isChecked && <Check size={13} weight="bold" aria-hidden="true" />}
-                      </span>
-                      <span className="chip-text">{type}</span>
-                    </label>
-                  );
-                })}
+              <fieldset className="contact-enquiry-types contact-form-field">
+                <legend>What would you like to discuss?</legend>
+                <div className="enquiry-chips-row">
+                  {['General Inquiry', 'Building Contract', 'Joint Venture'].map((type) => {
+                    const isChecked = selectedEnquiries.includes(type);
+                    return (
+                      <label
+                        key={type}
+                        className={`enquiry-chip-label${isChecked ? ' is-selected' : ''}`}
+                      >
+                        <input
+                          type="checkbox"
+                          name="enquiryType"
+                          value={type}
+                          checked={isChecked}
+                          onChange={() => handleEnquiryToggle(type)}
+                        />
+                        <span className="chip-indicator">
+                          {isChecked && <Check size={13} weight="bold" aria-hidden="true" />}
+                        </span>
+                        <span className="chip-text">{type}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </fieldset>
+
+              <div className="contact-form-field">
+                <label className="animated-input-group">
+                  <span>Message (optional)</span>
+                  <textarea
+                    name="message"
+                    maxLength={2000}
+                    rows="4"
+                    placeholder="Share a few details about your property, requirements, or vision..."
+                    value={formValues.message}
+                    onChange={(e) => setFormValues({ ...formValues, message: e.target.value })}
+                  />
+                </label>
+              </div>
+
+              <div className="contact-form-field form-submit-container">
+                <button className="button button-green magnetic-button" type="submit" disabled={enquiry.saving || enquiry.saved}>
+                  <span>{enquiry.buttonLabel}</span>
+                  <ArrowUpRight size={16} weight="bold" aria-hidden="true" />
+                </button>
+                <div className="contact-page-form-note is-visible" role="status">{enquiry.message}</div>
               </div>
             </fieldset>
-
-            <div className="contact-form-field">
-              <label className="animated-input-group">
-                <span>Message (optional)</span>
-                <textarea 
-                  name="message" 
-                  rows="4" 
-                  placeholder="Share a few details about your property, requirements, or vision..." 
-                  value={formValues.message}
-                  onChange={(e) => setFormValues({ ...formValues, message: e.target.value })}
-                />
-              </label>
-            </div>
-
-            <div className="contact-form-field form-submit-container">
-              <button 
-                className={`button button-green magnetic-button${submitted ? ' is-success' : ''}`} 
-                type="submit"
-              >
-                {submitted ? (
-                  <>
-                    <CheckCircle size={18} weight="fill" aria-hidden="true" />
-                    <span>Enquiry prepared</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Prepare enquiry</span>
-                    <ArrowUpRight size={16} weight="bold" className="button-arrow-icon" aria-hidden="true" />
-                  </>
-                )}
-              </button>
-
-              <div 
-                className={`contact-page-form-note${submitted ? ' is-visible' : ''}`} 
-                aria-live="polite"
-              >
-                {submitted ? (
-                  <div className="success-banner-card">
-                    <Sparkle size={18} weight="fill" className="success-sparkle" aria-hidden="true" />
-                    <div>
-                      <strong>Your enquiry is prepared.</strong>
-                      <p>Online sending is not connected yet. Please use the phone or email details on this page to contact our team. Your details remain in the form.</p>
-                    </div>
-                  </div>
-                ) : (
-                  <span className="preview-mode-tag">
-                    Online sending is not connected yet. You can contact our team by phone or email.
-                  </span>
-                )}
-              </div>
-            </div>
           </form>
 
           {/* Interactive Contact Details Aside */}
@@ -438,10 +407,10 @@ export default function ContactPage() {
                     3rd St, Secretariat Colony, Lakshmipuram,<br />
                     Chennai, 600099
                   </p>
-                  <a 
-                    className="detail-action-link" 
-                    href="https://share.google/sFic984O7ZStGxeze" 
-                    target="_blank" 
+                  <a
+                    className="detail-action-link"
+                    href="https://share.google/sFic984O7ZStGxeze"
+                    target="_blank"
                     rel="noopener noreferrer"
                   >
                     View directions on map <ArrowUpRight size={13} aria-hidden="true" />
@@ -457,9 +426,9 @@ export default function ContactPage() {
                 <div className="detail-content">
                   <div className="detail-header-flex">
                     <span className="detail-label">Direct Phone Line</span>
-                    <button 
-                      type="button" 
-                      className="copy-mini-btn" 
+                    <button
+                      type="button"
+                      className="copy-mini-btn"
                       onClick={() => handleCopy('+919940407777', 'phone')}
                       title="Copy phone number"
                     >
@@ -490,19 +459,19 @@ export default function ContactPage() {
                     <span className="live-status-badge">Fast Chat</span>
                   </div>
                   <p>
-                    <a 
-                      className="detail-primary-link" 
-                      href="https://wa.me/919940407777" 
-                      target="_blank" 
+                    <a
+                      className="detail-primary-link"
+                      href="https://wa.me/919940407777"
+                      target="_blank"
                       rel="noopener noreferrer"
                     >
                       +91 99404 07777
                     </a>
                   </p>
-                  <a 
-                    className="whatsapp-quick-chip" 
-                    href="https://wa.me/919940407777" 
-                    target="_blank" 
+                  <a
+                    className="whatsapp-quick-chip"
+                    href="https://wa.me/919940407777"
+                    target="_blank"
                     rel="noopener noreferrer"
                   >
                     Start WhatsApp Chat <ArrowUpRight size={12} aria-hidden="true" />
@@ -518,9 +487,9 @@ export default function ContactPage() {
                 <div className="detail-content">
                   <div className="detail-header-flex">
                     <span className="detail-label">Email Inquiries</span>
-                    <button 
-                      type="button" 
-                      className="copy-mini-btn" 
+                    <button
+                      type="button"
+                      className="copy-mini-btn"
                       onClick={() => handleCopy('saimaha1000@gmail.com', 'email')}
                       title="Copy email address"
                     >
@@ -545,8 +514,8 @@ export default function ContactPage() {
 
         {/* Interactive Office Map Section */}
         <section className="contact-map-section section-shell" aria-labelledby="contact-map-title">
-          <div 
-            className="contact-map-card tilt-card-element" 
+          <div
+            className="contact-map-card tilt-card-element"
             ref={mapCardRef}
             onMouseMove={handleMapMouseMove}
             onMouseLeave={handleMapMouseLeave}
@@ -560,15 +529,15 @@ export default function ContactPage() {
               <p>
                 Plot 4 & 5, ARUNACHALAESWARAR ILLAM, 3rd St, Secretariat Colony, Lakshmipuram, Chennai, 600099.
               </p>
-              
+
               <div className="map-actions-group">
-                <a 
-                  className="contact-map-area magnetic-chip" 
-                  href="https://share.google/sFic984O7ZStGxeze" 
-                  target="_blank" 
+                <a
+                  className="contact-map-area magnetic-chip"
+                  href="https://share.google/sFic984O7ZStGxeze"
+                  target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <MapPin size={16} weight="bold" aria-hidden="true" /> 
+                  <MapPin size={16} weight="bold" aria-hidden="true" />
                   <span>Open in Google Maps</span>
                   <ArrowUpRight size={14} aria-hidden="true" />
                 </a>
@@ -586,11 +555,11 @@ export default function ContactPage() {
                 <span className="map-radar-circle wave-1" />
                 <span className="map-radar-circle wave-2" />
               </div>
-              <iframe 
-                title="Map location for Maha Construction, Chennai" 
-                src="https://maps.google.com/maps?q=Maha+construction,+Plot+4+%26+5,+ARUNACHALAESWARAR+ILLAM,+3rd+St,+Secretariat+Colony,+Lakshmipuram,+Chennai,+600099&t=&z=16&ie=UTF8&iwloc=&output=embed" 
-                loading="lazy" 
-                referrerPolicy="no-referrer-when-downgrade" 
+              <iframe
+                title="Map location for Maha Construction, Chennai"
+                src="https://maps.google.com/maps?q=Maha+construction,+Plot+4+%26+5,+ARUNACHALAESWARAR+ILLAM,+3rd+St,+Secretariat+Colony,+Lakshmipuram,+Chennai,+600099&t=&z=16&ie=UTF8&iwloc=&output=embed"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
               />
             </div>
           </div>

@@ -135,17 +135,6 @@ function AboutPage({ variant = 'original' }) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    const previousTitle = document.title;
-    const description = document.querySelector('meta[name="description"]');
-    const previousDescription = description?.content;
-    document.title = 'About Maha Constructions | Building with Purpose';
-    if (description) description.content = 'Discover the people, principles and story behind Maha Constructions.';
-    return () => {
-      document.title = previousTitle;
-      if (description && previousDescription) description.content = previousDescription;
-    };
-  }, []);
 
   useEffect(() => {
     const media = gsap.matchMedia(pageRef);
@@ -214,7 +203,7 @@ function AboutPage({ variant = 'original' }) {
     <div className="about-page" ref={pageRef}>
       <header className={`site-header about-header${scrolled ? ' is-scrolled' : ''}${menuOpen ? ' menu-open' : ''}`}>
         <a className="wordmark" href={sitePath('/')} aria-label="Maha Constructions home" onClick={closeMenu}>
-          <img src={sitePath('/images/maha-constructions-logo.png')} alt="Maha Constructions" />
+          <img src={sitePath('/images/maha-constructions-logo.webp')} alt="Maha Constructions" />
         </a>
         <button
           className="menu-toggle"
@@ -448,11 +437,8 @@ function CompanyAboutPage() {
     const handleScroll = () => setScrolled(window.scrollY > 24);
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
-    const previousTitle = document.title;
-    document.title = 'About Us | Maha Constructions';
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      document.title = previousTitle;
     };
   }, []);
 
@@ -516,7 +502,7 @@ function CompanyAboutPage() {
   return (
     <div className="about-page company-about-page" ref={companyRef}>
       <header className={`site-header projects-header${scrolled ? ' is-scrolled' : ''}${menuOpen ? ' menu-open' : ''}`}>
-        <a className="wordmark" href={sitePath('/')} aria-label="Maha Constructions home" onClick={closeMenu}><img src={sitePath('/images/maha-constructions-logo.png')} alt="Maha Constructions" /></a>
+        <a className="wordmark" href={sitePath('/')} aria-label="Maha Constructions home" onClick={closeMenu}><img src={sitePath('/images/maha-constructions-logo.webp')} alt="Maha Constructions" /></a>
         <button className="menu-toggle" type="button" aria-label={menuOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>
           {menuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
         </button>
@@ -549,7 +535,7 @@ function CompanyAboutPage() {
             <div className="company-attribution"><span/><div><strong>Mr. V. Satish Kumar</strong><small>Founder & Managing Director · Maha Constructions</small></div></div>
           </div>
           <a className="company-founder-project" data-company-founder href={sitePath('/projects/maha-kuber-thirumangalam')}>
-            <img src={sitePath('/images/maha-kuber-elevation-expanded.png')} alt="Maha Kuber building elevation in Thirumangalam" loading="lazy" width="1448" height="1086" />
+            <img src={sitePath('/images/maha-kuber-elevation-expanded.webp')} alt="Maha Kuber building elevation in Thirumangalam" loading="lazy" width="1448" height="1086" />
             <span>Maha Kuber <span>View project <ArrowUpRight size={18} aria-hidden="true" /></span></span>
           </a>
         </section>

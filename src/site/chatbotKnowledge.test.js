@@ -24,6 +24,7 @@ test('Achyuda selection preserves context without borrowing Kuber facts', () => 
   const location = answerQuestion('Where is it?', selected);
   assert.ok(location.text.includes('Periyar Nagar, Chennai'));
   assert.ok(location.text.includes('pending confirmation'));
+  assert.equal(project.mapUrl, 'https://maps.app.goo.gl/Cm3uFspRPSb6w1sM9?g_st=awb');
   assert.ok(!location.text.includes('undefined'));
   assert.ok(!location.text.includes(ongoingProjects[0].fullAddress));
   const sizes = answerQuestion('yes', location);
@@ -36,8 +37,10 @@ test('Achyuda selection preserves context without borrowing Kuber facts', () => 
   assert.ok(amenities.text.includes('Covered Car Parking'));
   assert.equal(amenities.projectSlug, project.slug);
   assert.equal(project.totalHomes, 6);
-  for (const field of ['fullAddress', 'mapEmbedUrl', 'gallery', 'landmarks']) assert.equal(project[field], undefined);
-  assert.ok(!project.details.includes('Bank Loan Available'));
+  assert.ok(project.mapEmbedUrl.startsWith('https://www.google.com/maps/embed?pb='));
+  assert.ok(project.mapEmbedUrl.includes('22nd%20St%2C%20Periyar%20Nagar%20West'));
+  for (const field of ['fullAddress', 'gallery', 'landmarks']) assert.equal(project[field], undefined);
+  assert.ok(project.details.includes('Bank Loan Available'));
   assert.deepEqual(answerQuestion('Show floor plans').choices, ongoingProjects.map((item) => item.name));
 });
 
